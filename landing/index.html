@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShutUP Forwarder — AI-Powered Car Transport</title>
+  <meta name="description" content="Take a photo of your car, tell us where it needs to go. Our AI finds a driver, negotiates the price, tracks the journey, and protects you if anything goes wrong." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ─── NAV ─────────────────────────────────────────────────────── -->
+  <header class="nav" id="nav">
+    <div class="container nav__inner">
+      <a href="#" class="nav__logo">
+        <span class="logo-icon">🚗</span>
+        <span>ShutUP <strong>Forwarder</strong></span>
+      </a>
+      <nav class="nav__links" aria-label="Main navigation">
+        <a href="#how-it-works">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#protection">Protection</a>
+        <a href="#for-who">Who it's for</a>
+        <a href="#drivers" class="nav__driver-link">For Drivers</a>
+      </nav>
+      <div class="nav__actions">
+        <a href="#" class="btn btn--ghost">Sign in</a>
+        <a href="#quote" class="btn btn--primary">Get a quote</a>
+      </div>
+      <button class="nav__burger" id="burger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ─── HERO ─────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero__bg-grid"></div>
+    <div class="container hero__inner">
+      <div class="badge">✦ Now with AI negotiation</div>
+      <h1 class="hero__headline">
+        Your car, transported.<br />
+        <span class="gradient-text">Zero stress.</span>
+      </h1>
+      <p class="hero__sub">
+        Snap a photo, drop a pin. Our AI finds a verified driver, locks in the best price,
+        and watches over your car from pickup to delivery — with a photo record that protects
+        you if anything goes wrong.
+      </p>
+      <div class="hero__ctas">
+        <a href="#quote" class="btn btn--primary btn--lg">Get an instant quote →</a>
+        <a href="#how-it-works" class="btn btn--ghost btn--lg">See how it works</a>
+      </div>
+      <div class="hero__trust">
+        <div class="trust-item">
+          <span class="trust-stars">★★★★★</span>
+          <span>4.8 · 2 000+ transports</span>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">🔒 Photos locked at pickup</div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">🤖 AI negotiates for you</div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">🇪🇺 All of Europe covered</div>
+      </div>
+    </div>
+
+    <!-- floating phone mockup -->
+    <div class="container hero__mockup-wrap">
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="phone-bar">
+            <span class="phone-dot"></span>
+            <span class="phone-title">Job #SF-4821</span>
+            <span class="phone-dot"></span>
+          </div>
+          <div class="phone-row phone-route">Amsterdam → Munich</div>
+          <div class="phone-row phone-car">BMW 3 Series · 2019</div>
+          <div class="phone-timeline">
+            <div class="tl-item tl-done">✅ Car collected · Thu 09:00</div>
+            <div class="tl-item tl-done">✅ Departed Netherlands</div>
+            <div class="tl-item tl-active">◉ Cologne — on schedule</div>
+            <div class="tl-item tl-future">○ Munich · Est. Sat 09:00</div>
+          </div>
+          <div class="phone-driver">
+            <span>🚛 Pieter van Dam</span>
+            <span class="driver-stars">★★★★☆ 4.7</span>
+          </div>
+          <div class="phone-actions">
+            <button class="phone-btn phone-btn--call">📞 Call</button>
+            <button class="phone-btn phone-btn--msg">💬 Message</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── HOW IT WORKS ──────────────────────────────────────────────── -->
+  <section class="section" id="how-it-works">
+    <div class="container">
+      <div class="section-label">Simple process</div>
+      <h2 class="section-title">From photo to delivery in 3 steps</h2>
+      <p class="section-sub">You do three things. The AI does the rest.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step__num">01</div>
+          <div class="step__icon">📋</div>
+          <h3>Submit your car</h3>
+          <p>Fill in your car's details, snap photos of every angle (our AI spots existing damage instantly), and enter pickup and delivery addresses.</p>
+        </div>
+        <div class="step__connector"></div>
+        <div class="step">
+          <div class="step__num">02</div>
+          <div class="step__icon">🤖</div>
+          <h3>AI finds you a driver</h3>
+          <p>We broadcast your job to verified drivers. Our AI evaluates bids and negotiates the best price for you — usually within 3 hours.</p>
+        </div>
+        <div class="step__connector"></div>
+        <div class="step">
+          <div class="step__num">03</div>
+          <div class="step__icon">✅</div>
+          <h3>Track, receive, accept</h3>
+          <p>Follow your car live. At delivery, our AI compares before-and-after photos. If nothing changed, tap Accept. If there's damage, we handle the insurance claim.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FEATURES ─────────────────────────────────────────────────── -->
+  <section class="section section--alt" id="features">
+    <div class="container">
+      <div class="section-label">Why us</div>
+      <h2 class="section-title">Everything handled for you</h2>
+      <p class="section-sub">Not a form that sends you emails. A system that actually does the work.</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🤝</div>
+          <h3>AI price negotiation</h3>
+          <p>Our AI negotiates on your behalf in real time. It knows what a fair price looks like for every route in Europe and won't budge past your budget.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📸</div>
+          <h3>Locked photo evidence</h3>
+          <p>Three immutable photo sets — yours at submission, driver's at pickup, driver's at delivery. No one can alter them. You're always protected.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📍</div>
+          <h3>Live tracking</h3>
+          <p>Know exactly where your car is at any time. Automatic status updates via WhatsApp, email, or push — no chasing needed.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <h3>Instant damage detection</h3>
+          <p>AI compares before and after photos pixel by pixel. New scratches don't slip through. Every difference is flagged with photo evidence attached.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📄</div>
+          <h3>Insurance claim handled</h3>
+          <p>If damage is detected, our AI drafts the claim with all evidence. A qualified adjuster reviews it — you don't deal with the insurer yourself.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📜</div>
+          <h3>Compliance built in</h3>
+          <p>Cross-border paperwork (CMR waybills, customs forms, power of attorney) is checked automatically before your job is dispatched.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PROTECTION ────────────────────────────────────────────────── -->
+  <section class="section" id="protection">
+    <div class="container">
+      <div class="section-label">Evidence chain</div>
+      <h2 class="section-title">Your car is protected at every handover</h2>
+      <p class="section-sub">Three locked photo sets create an unbreakable record — before, during, and after.</p>
+
+      <div class="evidence-chain">
+        <div class="evidence-step">
+          <div class="evidence-icon">📱</div>
+          <h4>You upload</h4>
+          <p>All sides + existing damage noted by AI at submission</p>
+          <div class="evidence-badge">🔒 Locked</div>
+        </div>
+        <div class="evidence-arrow">→</div>
+        <div class="evidence-step">
+          <div class="evidence-icon">🚛</div>
+          <h4>Driver at pickup</h4>
+          <p>Mandatory photo set before loading. Cannot proceed without it.</p>
+          <div class="evidence-badge">🔒 Locked</div>
+        </div>
+        <div class="evidence-arrow">→</div>
+        <div class="evidence-step">
+          <div class="evidence-icon">🏠</div>
+          <h4>Driver at delivery</h4>
+          <p>Full photo set at destination before handover.</p>
+          <div class="evidence-badge">🔒 Locked</div>
+        </div>
+        <div class="evidence-arrow">→</div>
+        <div class="evidence-step evidence-step--result">
+          <div class="evidence-icon">🤖</div>
+          <h4>AI compares all 3</h4>
+          <p>Any new damage is caught, documented, and flagged automatically.</p>
+          <div class="evidence-badge evidence-badge--ai">✦ AI Report</div>
+        </div>
+      </div>
+
+      <div class="protection-note">
+        <strong>Important:</strong> The AI's damage report is advisory. A qualified human insurance adjuster always reviews any claim before it is filed. No automated liability decisions.
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOR WHO ───────────────────────────────────────────────────── -->
+  <section class="section section--alt" id="for-who">
+    <div class="container">
+      <div class="section-label">Who it's for</div>
+      <h2 class="section-title">For individuals and businesses</h2>
+
+      <div class="for-who-grid">
+        <div class="for-who-card">
+          <div class="for-who-icon">🧑</div>
+          <h3>Individuals</h3>
+          <ul>
+            <li>Bought a car abroad and need it home</li>
+            <li>Moving and want your car to follow</li>
+            <li>Sending a car to a holiday home</li>
+            <li>Non-running or classic car transport</li>
+          </ul>
+          <a href="#quote" class="btn btn--primary">Get a personal quote</a>
+        </div>
+        <div class="for-who-card for-who-card--business">
+          <div class="for-who-card__badge">Popular for businesses</div>
+          <div class="for-who-icon">🏢</div>
+          <h3>Businesses</h3>
+          <ul>
+            <li>Car dealers moving stock between locations</li>
+            <li>Fleet operators relocating vehicles</li>
+            <li>Rental companies balancing depots</li>
+            <li>Wholesalers with regular transport needs</li>
+          </ul>
+          <a href="#quote" class="btn btn--primary">Get a business quote</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── DRIVERS ───────────────────────────────────────────────────── -->
+  <section class="section drivers-section" id="drivers">
+    <div class="container drivers-inner">
+      <div class="drivers-text">
+        <div class="section-label section-label--light">Are you a driver?</div>
+        <h2 class="section-title section-title--light">Join the forwarder network</h2>
+        <p class="section-sub section-sub--light">
+          Get a real-time feed of available jobs on your routes. Accept at posted rates or counter-bid.
+          Get paid fast. Build your rating.
+        </p>
+        <ul class="driver-perks">
+          <li>✅ Jobs matched to your active routes</li>
+          <li>✅ One-tap accept or counter-bid</li>
+          <li>✅ Clear pickup & delivery instructions</li>
+          <li>✅ Fast payout after delivery confirmation</li>
+          <li>✅ Rating system that rewards reliability</li>
+        </ul>
+        <a href="#" class="btn btn--white btn--lg">Apply as a driver</a>
+      </div>
+      <div class="drivers-mockup">
+        <div class="phone-mockup phone-mockup--dark">
+          <div class="phone-screen phone-screen--dark">
+            <div class="phone-bar phone-bar--dark">
+              <span class="phone-title">Available Jobs</span>
+              <span class="phone-notif">🔔 2</span>
+            </div>
+            <div class="job-card">
+              <div class="job-route">Amsterdam → Munich</div>
+              <div class="job-car">BMW 3 Series · Running</div>
+              <div class="job-date">📅 Thu 22 Apr</div>
+              <div class="job-price">💶 €320 – €380</div>
+              <div class="job-btns">
+                <button class="job-btn job-btn--bid">💬 Bid</button>
+                <button class="job-btn job-btn--accept">✅ Accept</button>
+              </div>
+            </div>
+            <div class="job-card job-card--dim">
+              <div class="job-route">Rotterdam → Berlin</div>
+              <div class="job-car">VW Golf · ⚠️ Non-running</div>
+              <div class="job-date">📅 Fri 23 Apr</div>
+              <div class="job-price">💶 €290 – €350</div>
+              <div class="job-btns">
+                <button class="job-btn job-btn--bid">💬 Bid</button>
+                <button class="job-btn job-btn--accept">✅ Accept</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── TESTIMONIALS ─────────────────────────────────────────────── -->
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="section-label">Reviews</div>
+      <h2 class="section-title">What customers say</h2>
+      <div class="testimonials-grid">
+        <div class="testimonial">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"I bought a BMW in Belgium and needed it delivered to Hamburg. The AI found a driver within 2 hours, the price was fair, and I tracked everything live. Arrived without a single new scratch."</p>
+          <div class="testimonial-author">— Luc L., private buyer</div>
+        </div>
+        <div class="testimonial">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"We move 20–30 vehicles a month between our dealerships. ShutUP Forwarder cut our coordination time by 80%. The photo evidence system alone is worth it — disputes basically don't happen anymore."</p>
+          <div class="testimonial-author">— Steven V., car dealer</div>
+        </div>
+        <div class="testimonial">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"My classic Triumph needed moving from Finland to Belgium. I was nervous. The team kept me informed every step, the driver was fantastic, and delivery photos confirmed no issues. Couldn't ask for more."</p>
+          <div class="testimonial-author">— Wouter V., classic car owner</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── QUOTE CTA ─────────────────────────────────────────────────── -->
+  <section class="section cta-section" id="quote">
+    <div class="container cta-inner">
+      <h2 class="cta-title">Ready to move your car?</h2>
+      <p class="cta-sub">Tell us about your car and route. We'll handle everything else.</p>
+      <div class="quote-form">
+        <div class="quote-row">
+          <div class="quote-field">
+            <label>Pickup address</label>
+            <input type="text" placeholder="e.g. Amsterdam, Netherlands" />
+          </div>
+          <div class="quote-arrow">→</div>
+          <div class="quote-field">
+            <label>Delivery address</label>
+            <input type="text" placeholder="e.g. Munich, Germany" />
+          </div>
+        </div>
+        <div class="quote-row quote-row--bottom">
+          <div class="quote-field">
+            <label>Car make & model</label>
+            <input type="text" placeholder="e.g. BMW 3 Series 2019" />
+          </div>
+          <div class="quote-field">
+            <label>Your email</label>
+            <input type="email" placeholder="you@example.com" />
+          </div>
+          <button class="btn btn--primary btn--lg quote-submit">Get my quote →</button>
+        </div>
+        <p class="quote-note">No account needed. Quote in under 3 hours. No spam.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <a href="#" class="nav__logo">
+          <span class="logo-icon">🚗</span>
+          <span>ShutUP <strong>Forwarder</strong></span>
+        </a>
+        <p>AI-powered car transport across Europe. Fast, fair, fully tracked.</p>
+        <div class="footer-social">
+          <a href="#" aria-label="LinkedIn">in</a>
+          <a href="#" aria-label="Instagram">ig</a>
+          <a href="#" aria-label="Facebook">fb</a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h5>Platform</h5>
+          <a href="#how-it-works">How it works</a>
+          <a href="#features">Features</a>
+          <a href="#protection">Car protection</a>
+          <a href="#for-who">For businesses</a>
+          <a href="#drivers">For drivers</a>
+        </div>
+        <div class="footer-col">
+          <h5>Routes</h5>
+          <a href="#">Netherlands</a>
+          <a href="#">Germany</a>
+          <a href="#">Belgium</a>
+          <a href="#">France</a>
+          <a href="#">All of Europe</a>
+        </div>
+        <div class="footer-col">
+          <h5>Company</h5>
+          <a href="#">About us</a>
+          <a href="#">Blog</a>
+          <a href="#">Careers</a>
+          <a href="#">Contact</a>
+        </div>
+        <div class="footer-col">
+          <h5>Legal</h5>
+          <a href="#">Terms of service</a>
+          <a href="#">Privacy policy</a>
+          <a href="#">Cookie policy</a>
+          <a href="#">CMR Convention</a>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© 2026 ShutUP Forwarder. All rights reserved.</span>
+      <span>Built with the Vercel AI SDK</span>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
