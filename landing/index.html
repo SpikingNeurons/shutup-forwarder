@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 </head>
 <body>
 
@@ -21,9 +22,10 @@
       </a>
       <nav class="nav__links" aria-label="Main navigation">
         <a href="#how-it-works">How it works</a>
+        <a href="#step-by-step">Step by step</a>
         <a href="#features">Features</a>
-        <a href="#protection">Protection</a>
-        <a href="#for-who">Who it's for</a>
+        <a href="#screens">Screens</a>
+        <a href="#faq">FAQ</a>
         <a href="#drivers" class="nav__driver-link">For Drivers</a>
       </nav>
       <div class="nav__actions">
@@ -297,6 +299,535 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FULL JOURNEY DIAGRAM ─────────────────────────────────────── -->
+  <section class="section section--alt" id="journey">
+    <div class="container">
+      <div class="section-label">End to end</div>
+      <h2 class="section-title">The complete picture</h2>
+      <p class="section-sub">From the moment you submit your car to the moment you accept delivery — every step is handled.</p>
+      <div class="mermaid-wrap">
+        <pre class="mermaid">
+flowchart TD
+    A(["🧑 You (the Customer)"]) -->|"Submit car details + photos"| B["📋 Job Created"]
+    B --> C["🤖 AI checks your car & validates details"]
+    C --> D["📢 AI sends job to all available drivers"]
+    D --> E(["🚛 Drivers bid on your job"])
+    E --> F["🤖 AI negotiates best price for you"]
+    F --> G(["✅ Driver accepts the job"])
+    G --> H["📸 Driver photos your car at pickup"]
+    H --> I["🚗 Car is in transit — AI tracks progress"]
+    I --> J["📸 Driver photos your car at delivery"]
+    J --> K["🤖 AI compares before & after photos"]
+    K -->|"No damage"| L(["✅ You accept delivery — Job complete!"])
+    K -->|"Damage found"| M["🤖 AI files insurance claim"]
+    M --> N(["👨‍💼 Insurance Adjuster reviews & settles"])
+        </pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── STEP BY STEP ──────────────────────────────────────────────── -->
+  <section class="section" id="step-by-step">
+    <div class="container">
+      <div class="section-label">Detailed walkthrough</div>
+      <h2 class="section-title">What happens at each stage</h2>
+
+      <!-- Step 1 -->
+      <div class="deep-step">
+        <div class="deep-step__header">
+          <div class="deep-step__num">Step 1</div>
+          <h3>You fill in a simple form</h3>
+        </div>
+        <p class="deep-step__desc">You tell us about your car and where it needs to go. The app walks you through it in five screens. The AI reads your chassis number automatically — just point the camera at it — and <strong>immediately highlights any existing scratches or dents</strong> as you upload photos.</p>
+        <div class="mermaid-wrap">
+          <pre class="mermaid">
+flowchart LR
+    S1["🔢 Chassis number & car details"] --> S2["📸 Photos of your car — all sides + damage"] --> S3["📍 Pickup address & delivery address"] --> S4["📅 Preferred dates & contact info"] --> S5["✅ Submit"]
+          </pre>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="deep-step">
+        <div class="deep-step__header">
+          <div class="deep-step__num">Step 2</div>
+          <h3>AI finds you a driver</h3>
+        </div>
+        <p class="deep-step__desc">You don't contact anyone. The AI broadcasts your job to our verified driver network and handles all negotiation. It knows what a fair price looks like for every route in Europe — it won't accept too high, and it protects drivers from being pushed unfairly low.</p>
+        <div class="mermaid-wrap">
+          <pre class="mermaid">
+sequenceDiagram
+    participant AI as 🤖 AI Dispatch
+    participant D1 as 🚛 Driver A
+    participant D2 as 🚛 Driver B
+    participant D3 as 🚛 Driver C
+    participant You as 🧑 You
+    AI->>D1: Job available: Amsterdam → Munich
+    AI->>D2: Job available: Amsterdam → Munich
+    AI->>D3: Job available: Amsterdam → Munich
+    D1-->>AI: Bid: €380
+    D2-->>AI: Bid: €420
+    D3-->>AI: Bid: €350
+    AI->>D3: Can you do €330?
+    D3-->>AI: Yes, €340 is my best
+    AI->>You: ✅ Driver found — €340, pickup Thursday
+          </pre>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="deep-step">
+        <div class="deep-step__header">
+          <div class="deep-step__num">Step 3</div>
+          <h3>Your car is collected</h3>
+        </div>
+        <p class="deep-step__desc">The driver arrives at your pickup address. Before loading the car, they take a <strong>mandatory set of photos</strong> through the app — all sides, dashboard, odometer. These are locked immediately and cannot be edited by anyone. This protects both you and the driver. Everyone agrees on the car's exact condition before it moves.</p>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="deep-step">
+        <div class="deep-step__header">
+          <div class="deep-step__num">Step 4</div>
+          <h3>Your car is in transit</h3>
+        </div>
+        <p class="deep-step__desc">Follow your car live. The AI sends automatic updates via WhatsApp, email, or push at every milestone. If anything unexpected happens — delay, route change, driver goes silent — the AI alerts you and the team.</p>
+        <div class="mermaid-wrap">
+          <pre class="mermaid">
+flowchart LR
+    T1["📦 Thu 09:00\nCar collected\nPhotos locked"] --> T2["🚗 Thu 10:30\nOn its way!"]
+    T2 --> T3["🇩🇪 Fri 14:00\nCrossing into\nGermany"]
+    T3 --> T4["🌙 Fri 18:00\nArrives\ntomorrow"]
+    T4 --> T5["✅ Sat 09:30\nDelivered\nin Munich"]
+          </pre>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="deep-step">
+        <div class="deep-step__header">
+          <div class="deep-step__num">Step 5</div>
+          <h3>Delivery &amp; damage check</h3>
+        </div>
+        <p class="deep-step__desc">At the destination, the driver takes another full photo set. The AI compares them against the pickup photos automatically. Any new damage is flagged with photo evidence. A human insurance adjuster — not an algorithm — reviews every claim before it is filed.</p>
+        <div class="mermaid-wrap">
+          <pre class="mermaid">
+flowchart TD
+    A["📸 Pickup photos (locked at collection)"] --> C
+    B["📸 Delivery photos (taken on arrival)"] --> C
+    C["🤖 AI compares both sets"] --> D{Any new damage?}
+    D -->|No| E["✅ Clean report — you accept delivery"]
+    D -->|Yes| F["📋 AI writes damage report with photo evidence"]
+    F --> G["👨‍💼 Insurance Adjuster reviews the report"]
+    G --> H["💬 Adjuster contacts your insurer"]
+    H --> I["💰 Claim settled"]
+          </pre>
+        </div>
+      </div>
+
+      <!-- Step 6 -->
+      <div class="deep-step">
+        <div class="deep-step__header">
+          <div class="deep-step__num">Step 6</div>
+          <h3>You accept or dispute</h3>
+        </div>
+        <p class="deep-step__desc">You get a delivery summary with all photos. <strong>Everything looks good?</strong> Tap "Accept" — job complete. <strong>Something isn't right?</strong> Tap "Dispute" — a team member reviews it with the full photo and log trail on hand.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── WHO IS INVOLVED ────────────────────────────────────────────── -->
+  <section class="section section--alt" id="agents">
+    <div class="container">
+      <div class="section-label">People &amp; AI</div>
+      <h2 class="section-title">Who is involved — and who does what</h2>
+      <p class="section-sub">AI handles speed and scale. Humans handle trust and liability.</p>
+
+      <div class="mermaid-wrap mermaid-wrap--wide">
+        <pre class="mermaid">
+graph TD
+    subgraph People["👤 People"]
+        C["🧑 Customer (you)"]
+        F["🚛 Driver / Forwarder"]
+        OM["👩‍💼 Operations Manager (ShutUP staff)"]
+        IA["👨‍💼 Insurance Adjuster (partner)"]
+    end
+    subgraph Agents["🤖 AI Agents — working behind the scenes"]
+        A1["Intake Agent\nReads your car & photos"]
+        A2["Dispatch Agent\nFinds & selects a driver"]
+        A3["Compliance Agent\nChecks legal paperwork"]
+        A4["In-Transit Agent\nTracks the journey"]
+        A5["Delivery Agent\nCompares photos"]
+        A6["Insurance Agent\nDrafts damage claims"]
+        A7["Comms Agent\nSends you updates"]
+    end
+    C -->|submits job| A1
+    A1 -->|validated job| A2
+    A2 -->|broadcasts to| F
+    F -->|bids & accepts| A2
+    A2 -->|checks docs with| A3
+    A3 -.->|flags issues to| OM
+    F -->|pickup & delivery photos| A5
+    A4 -->|status updates| C
+    A5 -->|damage found| A6
+    A6 -->|claim draft| IA
+    A7 -->|messages| C
+    OM -->|approves exceptions| A2
+        </pre>
+      </div>
+
+      <div class="roles-table-wrap">
+        <table class="roles-table">
+          <thead>
+            <tr><th>Who</th><th>What they do</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>🧑 <strong>You (Customer)</strong></td><td>Submit the job, track progress, accept or dispute delivery</td></tr>
+            <tr><td>🚛 <strong>Driver / Forwarder</strong></td><td>Pick up and deliver the car, take photos at both ends</td></tr>
+            <tr><td>👩‍💼 <strong>Operations Manager</strong></td><td>Steps in when price negotiations stall or something unusual happens</td></tr>
+            <tr><td>👨‍💼 <strong>Insurance Adjuster</strong></td><td>Reviews any damage claim the AI drafts before it goes to the insurer</td></tr>
+            <tr><td>🔧 <strong>Platform Admin</strong></td><td>Keeps the system running, vets drivers, manages content</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SCREEN WIREFRAMES ─────────────────────────────────────────── -->
+  <section class="section" id="screens">
+    <div class="container">
+      <div class="section-label">App screens</div>
+      <h2 class="section-title">What the app looks like</h2>
+      <p class="section-sub">Every screen is designed around one principle: make the right action obvious and everything else automatic.</p>
+
+      <div class="screens-tabs">
+        <div class="screens-tab-bar">
+          <button class="screens-tab active" data-tab="customer">Customer App</button>
+          <button class="screens-tab" data-tab="driver">Driver App</button>
+          <button class="screens-tab" data-tab="ops">Ops Dashboard</button>
+        </div>
+
+        <!-- Customer screens -->
+        <div class="screens-panel active" id="tab-customer">
+          <div class="screens-grid">
+            <div class="screen-card">
+              <div class="screen-card__label">Screen 1 — Vehicle Details</div>
+              <pre class="wireframe">┌──────────────────────────────────┐
+│  ShutUP Forwarder             ≡  │
+│──────────────────────────────────│
+│  ① Vehicle  ② Photos  ③ Route   │
+│  ④ Contact  ⑤ Review            │
+│                                  │
+│  Step 1: Vehicle Identity        │
+│                                  │
+│  Chassis / VIN Number            │
+│  ┌──────────────────────────┐   │
+│  │  WBA3A5C50CF256551       │   │
+│  └──────────────────────────┘   │
+│  [ 📷 Scan with camera instead ] │
+│                                  │
+│  Make              Model         │
+│  ┌─────────────┐  ┌───────────┐ │
+│  │  BMW      ▾ │  │ 3 Series▾ │ │
+│  └─────────────┘  └───────────┘ │
+│                                  │
+│  Year              Fuel type     │
+│  ┌─────────────┐  ┌───────────┐ │
+│  │  2019     ▾ │  │ Diesel  ▾ │ │
+│  └─────────────┘  └───────────┘ │
+│                                  │
+│  ┌──────────────────────────┐   │
+│  │         Next →           │   │
+│  └──────────────────────────┘   │
+└──────────────────────────────────┘</pre>
+              <p class="screen-card__note">AI reads the VIN from a camera scan — no typing required.</p>
+            </div>
+
+            <div class="screen-card">
+              <div class="screen-card__label">Screen 2 — Photo Upload</div>
+              <pre class="wireframe">┌──────────────────────────────────┐
+│  ShutUP Forwarder             ≡  │
+│──────────────────────────────────│
+│  Step 2: Vehicle Condition       │
+│  Photograph your car from        │
+│  every angle before it moves.    │
+│                                  │
+│  ┌─────────────┐ ┌─────────────┐│
+│  │   FRONT     │ │    REAR     ││
+│  │  ✅ Done    │ │  ✅ Done    ││
+│  └─────────────┘ └─────────────┘│
+│  ┌─────────────┐ ┌─────────────┐│
+│  │  LEFT SIDE  │ │ RIGHT SIDE  ││
+│  │  ✅ Done    │ │  📷 Take    ││
+│  └─────────────┘ └─────────────┘│
+│                                  │
+│  ┌──────────────────────────┐   │
+│  │  ⚠️  AI spotted:         │   │
+│  │  Scratch on front bumper │   │
+│  │  (pre-existing — noted)  │   │
+│  └──────────────────────────┘   │
+│                                  │
+│  ┌──────────────────────────┐   │
+│  │  ✏️ Confirm & Next →     │   │
+│  └──────────────────────────┘   │
+└──────────────────────────────────┘</pre>
+              <p class="screen-card__note">AI annotates damage in real time as each photo uploads.</p>
+            </div>
+
+            <div class="screen-card">
+              <div class="screen-card__label">Screen 3 — Transport Details</div>
+              <pre class="wireframe">┌──────────────────────────────────┐
+│  ShutUP Forwarder             ≡  │
+│──────────────────────────────────│
+│  Step 3: Transport Details       │
+│                                  │
+│  Pickup Address                  │
+│  ┌──────────────────────────┐   │
+│  │  Herengracht 12,         │   │
+│  │  1015 BZ Amsterdam       │   │
+│  └──────────────────────────┘   │
+│                                  │
+│  Pickup Window                   │
+│  ┌──────────────────────────┐   │
+│  │  Thu 22 Apr – Mon 26 Apr │   │
+│  └──────────────────────────┘   │
+│                                  │
+│  Delivery Address                │
+│  ┌──────────────────────────┐   │
+│  │  Maximilianstr. 5,       │   │
+│  │  80539 Munich            │   │
+│  └──────────────────────────┘   │
+│                                  │
+│  Does the car drive on its own?  │
+│  ●  Yes    ○  No                 │
+│                                  │
+│  ┌──────────────────────────┐   │
+│  │         Next →           │   │
+│  └──────────────────────────┘   │
+└──────────────────────────────────┘</pre>
+              <p class="screen-card__note">Address autocomplete powered by Google Maps. Compliance checked automatically.</p>
+            </div>
+
+            <div class="screen-card">
+              <div class="screen-card__label">Screen 4 — AI Working</div>
+              <pre class="wireframe">┌──────────────────────────────────┐
+│  ShutUP Forwarder             ≡  │
+│──────────────────────────────────│
+│  Job #SF-4821  ·  Submitted ✅   │
+│  BMW 3 Series 2019               │
+│  Amsterdam  ──────►  Munich      │
+│──────────────────────────────────│
+│                                  │
+│  🤖 AI is working on your job…   │
+│                                  │
+│  ✅  Car details verified        │
+│  ✅  Photos annotated            │
+│  ✅  Route & docs checked        │
+│  ⏳  Finding available drivers…  │
+│                                  │
+│  ┌──────────────────────────┐   │
+│  │  3 drivers notified      │   │
+│  │  Awaiting bids…          │   │
+│  └──────────────────────────┘   │
+│                                  │
+│  You'll hear back in &lt;3 hours.   │
+│                                  │
+└──────────────────────────────────┘</pre>
+              <p class="screen-card__note">Live progress — you see exactly what the AI is doing.</p>
+            </div>
+
+            <div class="screen-card">
+              <div class="screen-card__label">Screen 5 — Live Tracking</div>
+              <pre class="wireframe">┌──────────────────────────────────┐
+│  ShutUP Forwarder             ≡  │
+│──────────────────────────────────│
+│  Job #SF-4821                    │
+│  BMW 3 Series · Amsterdam→Munich │
+│──────────────────────────────────│
+│                                  │
+│  ●━━━━━━━━━◉━━━━━━━━━○           │
+│  Amsterdam  (here)   Munich      │
+│                                  │
+│  ✅  Thu 09:00  Car collected    │
+│  ✅  Thu 14:00  Departed NL      │
+│  ✅  Fri 14:00  Entered Germany  │
+│  ◉   Fri 17:30  On the way       │
+│  ○   Sat 09:00  Est. delivery    │
+│                                  │
+│  Driver: Pieter van Dam          │
+│  ★★★★☆  4.7 · 312 trips         │
+│  [ 📞 Call ]   [ 💬 Message ]   │
+│                                  │
+└──────────────────────────────────┘</pre>
+              <p class="screen-card__note">Real-time progress + direct contact with your driver.</p>
+            </div>
+
+            <div class="screen-card">
+              <div class="screen-card__label">Screen 6 — Delivery Report</div>
+              <pre class="wireframe">┌──────────────────────────────────┐
+│  ShutUP Forwarder             ≡  │
+│──────────────────────────────────│
+│  Delivery Report · Job #SF-4821  │
+│──────────────────────────────────│
+│                                  │
+│   ✅  No new damage detected     │
+│       AI confidence: 98%         │
+│       8 photos compared          │
+│                                  │
+│  BEFORE (Amsterdam)              │
+│  ┌─────────┐ ┌─────────┐        │
+│  │ [front] │ │ [rear]  │  …     │
+│  └─────────┘ └─────────┘        │
+│                                  │
+│  AFTER (Munich)                  │
+│  ┌─────────┐ ┌─────────┐        │
+│  │ [front] │ │ [rear]  │  …     │
+│  └─────────┘ └─────────┘        │
+│                                  │
+│  ┌───────────────┐ ┌──────────┐ │
+│  │ ✅ Accept     │ │⚠️ Dispute│ │
+│  └───────────────┘ └──────────┘ │
+└──────────────────────────────────┘</pre>
+              <p class="screen-card__note">Side-by-side before/after photos. One tap to accept.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Driver screens -->
+        <div class="screens-panel" id="tab-driver">
+          <div class="screens-grid">
+            <div class="screen-card">
+              <div class="screen-card__label">Screen 7 — Job Feed</div>
+              <pre class="wireframe">┌──────────────────────────────────┐
+│  ≡  Forwarder App        🔔 2   │
+│──────────────────────────────────│
+│  Available Jobs Near You         │
+│                                  │
+│  ┌──────────────────────────┐   │
+│  │  Amsterdam → Munich      │   │
+│  │  BMW 3 Series · 2019     │   │
+│  │  Running · No extras     │   │
+│  │  📅 Pickup: Thu 22 Apr   │   │
+│  │  💶 Est. €320 – €380     │   │
+│  │  ┌──────────┐ ┌────────┐ │   │
+│  │  │  💬 Bid  │ │✅ Accept│ │   │
+│  │  └──────────┘ └────────┘ │   │
+│  └──────────────────────────┘   │
+│                                  │
+│  ┌──────────────────────────┐   │
+│  │  Rotterdam → Berlin      │   │
+│  │  Volkswagen Golf · 2021  │   │
+│  │  ⚠️ Non-running          │   │
+│  │  📅 Pickup: Fri 23 Apr   │   │
+│  │  💶 Est. €290 – €350     │   │
+│  │  ┌──────────┐ ┌────────┐ │   │
+│  │  │  💬 Bid  │ │✅ Accept│ │   │
+│  │  └──────────┘ └────────┘ │   │
+│  └──────────────────────────┘   │
+└──────────────────────────────────┘</pre>
+              <p class="screen-card__note">Real-time job feed matched to your registered route network.</p>
+            </div>
+
+            <div class="screen-card">
+              <div class="screen-card__label">Screen 8 — Pickup Confirmation</div>
+              <pre class="wireframe">┌──────────────────────────────────┐
+│  ←  Job #SF-4821                 │
+│──────────────────────────────────│
+│  📸 Pickup Confirmation          │
+│  BMW 3 Series · Herengracht 12   │
+│                                  │
+│  Photograph the car before       │
+│  loading. Photos are locked      │
+│  once confirmed.                 │
+│                                  │
+│  ┌─────────────┐ ┌─────────────┐│
+│  │   FRONT     │ │    REAR     ││
+│  │  ✅ Done    │ │  ✅ Done    ││
+│  └─────────────┘ └─────────────┘│
+│  ┌─────────────┐ ┌─────────────┐│
+│  │  LEFT SIDE  │ │ RIGHT SIDE  ││
+│  │  ✅ Done    │ │  ✅ Done    ││
+│  └─────────────┘ └─────────────┘│
+│  ┌─────────────┐ ┌─────────────┐│
+│  │  INTERIOR   │ │  ODOMETER   ││
+│  │  ✅ Done    │ │  📷 Take    ││
+│  └─────────────┘ └─────────────┘│
+│                                  │
+│  ⚠️  1 photo remaining           │
+│  ┌──────────────────────────┐   │
+│  │  🔒 Lock & Confirm (1 ✗) │   │
+│  └──────────────────────────┘   │
+└──────────────────────────────────┘</pre>
+              <p class="screen-card__note">The confirm button stays locked until every required photo is taken.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ops dashboard -->
+        <div class="screens-panel" id="tab-ops">
+          <div class="screens-grid screens-grid--wide">
+            <div class="screen-card screen-card--wide">
+              <div class="screen-card__label">Operations Manager Dashboard</div>
+              <pre class="wireframe wireframe--wide">┌────────────────────────────────────────────────────────────┐
+│  ShutUP Forwarder — Operations Dashboard                   │
+│────────────────────────────────────────────────────────────│
+│                                                            │
+│  🔴 Needs Attention (2)    🟡 In Progress (14)   ✅ Done  │
+│────────────────────────────────────────────────────────────│
+│                                                            │
+│  ⚠️  Job #SF-4819  ·  Negotiation stalled                  │
+│     Rotterdam → Warsaw  ·  No deal after 4 rounds          │
+│     AI suggested ceiling: €410  ·  Driver asking: €460     │
+│     [ Approve €460 ]   [ Set new ceiling ]   [ Cancel ]   │
+│                                                            │
+│  ⚠️  Job #SF-4803  ·  Driver went silent  ·  8h no update  │
+│     BMW X5  ·  Lyon → Madrid  ·  Customer notified         │
+│     [ Reassign driver ]   [ Contact driver ]               │
+│                                                            │
+│────────────────────────────────────────────────────────────│
+│  14 jobs running smoothly — no action needed               │
+└────────────────────────────────────────────────────────────┘</pre>
+              <p class="screen-card__note">The AI surfaces only the jobs that genuinely need a human decision. Everything else runs automatically.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FAQ ───────────────────────────────────────────────────────── -->
+  <section class="section section--alt" id="faq">
+    <div class="container faq-container">
+      <div class="section-label">Questions</div>
+      <h2 class="section-title">Frequently asked questions</h2>
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary>Do I need to be there when the car is collected?</summary>
+          <p>Not necessarily — you just need to ensure the driver can access the vehicle. The app coordinates the handover details and the driver takes the mandatory photo set before loading.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What if my car doesn't run?</summary>
+          <p>Note it in the form. Drivers who can handle non-running vehicles will see the job, and the price will reflect the extra equipment required.</p>
+        </details>
+        <details class="faq-item">
+          <summary>How long does transport take?</summary>
+          <p>Within a country: usually 1–3 days. Across Europe: typically 5–10 working days depending on distance and route.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What if I disagree with the AI's damage assessment?</summary>
+          <p>Tap "Dispute." A human team member reviews the full evidence trail — all three photo sets and the audit log — and makes the final call. The AI's report is advisory, never final.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Is my car insured during transport?</summary>
+          <p>The driver's carrier liability covers the vehicle during transit. Our AI-assisted photo record ensures any new damage is documented, evidence-backed, and claimable.</p>
+        </details>
+        <details class="faq-item">
+          <summary>How does the AI negotiate the price?</summary>
+          <p>The AI broadcasts your job to matching drivers, evaluates their bids against historical pricing data for your route, and negotiates within bounds set by our Operations Manager. It cannot agree to a price above your budget or below the driver's minimum — if no deal is reached, a human steps in.</p>
+        </details>
       </div>
     </div>
   </section>

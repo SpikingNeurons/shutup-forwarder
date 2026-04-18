@@ -1,3 +1,15 @@
+/* ─── MERMAID INIT ───────────────────────────────────────────────── */
+if (typeof mermaid !== 'undefined') {
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'neutral',
+    fontFamily: 'Inter, system-ui, sans-serif',
+    fontSize: 14,
+    flowchart: { curve: 'basis', padding: 20 },
+    sequence: { actorMargin: 60, messageMargin: 40 },
+  });
+}
+
 /* ─── NAV SCROLL EFFECT ──────────────────────────────────────────── */
 const nav = document.getElementById('nav');
 window.addEventListener('scroll', () => {
@@ -84,6 +96,18 @@ if (quoteSubmit) {
     }
   });
 }
+
+/* ─── SCREENS TAB SWITCHER ───────────────────────────────────────── */
+document.querySelectorAll('.screens-tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.tab;
+    document.querySelectorAll('.screens-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.screens-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    const panel = document.getElementById(`tab-${target}`);
+    if (panel) panel.classList.add('active');
+  });
+});
 
 /* ─── SMOOTH ACTIVE NAV HIGHLIGHT ────────────────────────────────── */
 const sections = document.querySelectorAll('section[id]');
