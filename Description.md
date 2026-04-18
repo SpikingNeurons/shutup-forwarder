@@ -94,14 +94,11 @@ The driver arrives at your pickup address. Before loading the car, they take a *
 You can see exactly where your car is at any time. The AI sends you updates automatically:
 
 ```mermaid
-timeline
-    title Example journey: Amsterdam → Munich
-    Thursday 09:00  : Driver collects your car
-                    : Photos locked in the system
-    Thursday 10:30  : "Your car is on its way 🚗"
-    Friday 14:00    : "Crossing the German border"
-    Friday 18:00    : "Your car arrives tomorrow morning"
-    Saturday 09:30  : Driver arrives in Munich
+flowchart LR
+    T1["📦 Thu 09:00\nCar collected\nPhotos locked"] --> T2["🚗 Thu 10:30\nOn its way!"]
+    T2 --> T3["🇩🇪 Fri 14:00\nCrossing into\nGermany"]
+    T3 --> T4["🌙 Fri 18:00\nArrives\ntomorrow"]
+    T4 --> T5["✅ Sat 09:30\nDelivered\nin Munich"]
 ```
 
 If anything unexpected happens (delay, route change), the AI contacts you and the driver and sorts it out.
