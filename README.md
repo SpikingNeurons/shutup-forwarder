@@ -37,15 +37,15 @@ All agents are implemented as tool-calling LLM chains using the Vercel AI SDK (`
 
 | Agent | Model Tier | Core Tools / Capabilities |
 |---|---|---|
-| **Intake Agent** | GPT-4o (vision) | Parses chassis/VIN via OCR, validates vehicle data against public registries, runs vision analysis on uploaded photos to classify and annotate pre-existing damage, normalises addresses via geocoding API. |
-| **Dispatch Agent** | GPT-4o | Scores forwarder candidates (rating, proximity, capacity, past performance), generates job broadcast messages, evaluates incoming bids, runs iterative negotiation within configured price floors/ceilings, selects winning bid and sends acceptance. |
-| **Negotiation Sub-Agent** | GPT-4o-mini | Handles back-and-forth bid counter-offers in a structured dialogue loop; escalates to Operations Manager when no agreement is reached within N rounds. |
-| **Compliance Agent** | GPT-4o | Checks cross-border transport legality, required documentation (CMR waybill, power of attorney, customs forms), and flags missing items before job is dispatched. |
-| **In-Transit Agent** | GPT-4o-mini | Polls carrier GPS/ETA updates, sends proactive status messages to customer and forwarder, triggers alerts on delays, and re-routes if the forwarder goes dark. |
-| **Delivery Agent** | GPT-4o (vision) | Compares pre-delivery vs. post-delivery photo sets pixel-semantically; generates a structured damage delta report; marks job as clean or damaged. |
-| **Insurance Agent** | GPT-4o | When damage delta is detected: drafts a formal claim (vehicle ID, damage description, photo evidence links, estimated repair cost band), routes to the Insurance Adjuster, and updates the customer in plain language. |
-| **Customer Comms Agent** | GPT-4o-mini | Omnichannel messaging (email, WhatsApp, push) to keep the customer informed at every milestone; handles FAQ replies using RAG over the platform knowledge base. |
-| **Audit & Logging Agent** | GPT-4o-mini | Maintains an immutable, timestamped narrative log of every agent action and human decision for legal and dispute resolution purposes. |
+| **Intake Agent** | GPT-4o (vision) | Parses chassis/VIN via OCR, validates vehicle data against public registries, runs vision analysis on uploaded photos to classify and annotate pre-existing damage, normalises addresses via geocoding API. Queries NeonDB for similar past jobs by make/model/route to pre-fill risk flags. |
+| **Dispatch Agent** | GPT-4o | Scores forwarder candidates (rating, proximity, capacity, past performance), generates job broadcast messages, evaluates incoming bids, runs iterative negotiation within configured price floors/ceilings, selects winning bid and sends acceptance. Queries aggregated bid history (`avg`, `percentile`) from NeonDB to anchor price recommendations. |
+| **Negotiation Sub-Agent** | GPT-4o-mini | Handles back-and-forth bid counter-offers in a structured dialogue loop; escalates to Operations Manager when no agreement is reached within N rounds. Reads forwarder negotiation history as structured rows from NeonDB to calibrate counter-offer strategy. |
+| **Compliance Agent** | GPT-4o | Checks cross-border transport legality, required documentation (CMR waybill, power of attorney, customs forms), and flags missing items before job is dispatched. **RAG** over a curated regulatory knowledge base (EU transport directives, country-specific import/customs rules) — unstructured documents maintained by the Operations Manager. |
+| **In-Transit Agent** | GPT-4o-mini | Polls carrier GPS/ETA updates, sends proactive status messages to customer and forwarder, triggers alerts on delays, and re-routes if the forwarder goes dark. Queries time-series delay analytics from NeonDB to set ETA expectations. |
+| **Delivery Agent** | GPT-4o (vision) | Compares pre-delivery vs. post-delivery photo sets pixel-semantically; generates a structured damage delta report; marks job as clean or damaged. Queries structured damage severity thresholds from NeonDB by vehicle make/model. |
+| **Insurance Agent** | GPT-4o | When damage delta is detected: drafts a formal claim (vehicle ID, damage description, photo evidence links, estimated repair cost band), routes to the Insurance Adjuster, and updates the customer in plain language. **RAG** over past settled claim narratives and repair cost data — free-text documents where semantic search meaningfully improves cost band estimation. |
+| **Customer Comms Agent** | GPT-4o-mini | Omnichannel messaging (email, WhatsApp, push) to keep the customer informed at every milestone. **RAG** over platform FAQ, terms of service, and past support threads — unstructured content that cannot be reduced to structured queries. |
+| **Audit & Logging Agent** | GPT-4o-mini | Maintains an immutable, timestamped narrative log of every agent action and human decision for legal and dispute resolution purposes. Retrieves prior entries by exact job ID and timestamp range via NeonDB — no semantic search needed. |
 
 ---
 
@@ -118,6 +118,9 @@ The submission flow is a multi-step wizard:
 | Vision Analysis | GPT-4o vision via Vercel AI SDK | Damage detection & VIN OCR in a single API call |
 | Database | NeonDB (serverless Postgres) | Branching, autoscale, connection pooling via `@neondatabase/serverless` |
 | ORM | Drizzle ORM | Type-safe queries, schema migrations (`drizzle-kit push`) |
+| Vector Store | NeonDB `pgvector` extension | Embeddings for Compliance, Insurance, and Customer Comms RAG — stored alongside relational data |
+| Embeddings | OpenAI `text-embedding-3-small` | Used only for the 3 RAG knowledge bases; all other agents use typed Drizzle queries |
+| RAG Pipeline | Vercel AI SDK `embed` + `cosineSimilarity` | Retrieval tool scoped to Compliance, Insurance, and FAQ knowledge bases |
 | Real-time | Vercel SSE (Server-Sent Events) | Job state change streaming to the UI without a WebSocket server |
 | File Storage | Vercel Blob | Photo uploads with signed `put` URLs, edge-cached delivery |
 | Auth | Clerk | Customer, Forwarder, Admin, Adjuster roles via `publicMetadata`; JWT templates for API auth |
@@ -157,6 +160,14 @@ forwarder/
 │   └── audit-agent.ts
 ├── lib/
 │   ├── db/                     # NeonDB client, Drizzle schema, migrations
+│   ├── rag/                    # RAG pipeline (Compliance, Insurance, FAQ only)
+│   │   ├── embed.ts            # OpenAI embedding wrapper
+│   │   ├── ingest.ts           # Chunking & upsert into pgvector
+│   │   ├── retrieve.ts         # Top-K similarity search tool
+│   │   └── knowledge-bases/
+│   │       ├── compliance/     # EU transport directives, customs rules
+│   │       ├── faq/            # Customer FAQ, T&Cs, support threads
+│   │       └── claims/         # Settled claim narratives & repair cost docs
 │   ├── tools/                  # Shared AI SDK tool definitions
 │   └── schemas/                # Zod schemas for structured outputs
 ├── components/                 # Shared UI (shadcn/ui)
@@ -168,6 +179,8 @@ forwarder/
 ## Key Design Decisions
 
 - **Agents are stateless functions** — all job state lives in NeonDB; agents read and write via typed Drizzle tool calls, making every action auditable and replayable.
+- **RAG is used only where data is unstructured** — Compliance (regulatory documents), Insurance (settled claim narratives), and Customer Comms (FAQ/T&Cs) use `pgvector` similarity search with cited chunk retrieval. All other agents use typed Drizzle queries against NeonDB; structured historical data (bids, delays, damage severity) is cheaper and more precise to query as SQL aggregations.
+- **Knowledge bases are role-gated** — the compliance KB is writable only by the Operations Manager; the claims KB is updated after each settled claim; the FAQ KB is editable by the Platform Admin. Ingestion runs via a Vercel Cron job.
 - **Human-in-the-loop gates** — pricing above policy ceiling, insurance claim filing, and disputed deliveries require explicit human sign-off before agents proceed.
 - **Photo evidence is immutable** — uploaded photos are stored with content-addressed keys and signed at upload time; Delivery Agent always compares against the canonical pre-delivery set, not customer-editable copies.
 - **Negotiation is bounded** — the Dispatch Agent operates within a price floor (forwarder minimum) and ceiling (customer budget or platform cap) set by the Operations Manager; the AI cannot agree to terms outside these bounds without human approval.
@@ -188,6 +201,9 @@ cp .env.example .env.local
 #          BLOB_READ_WRITE_TOKEN (Vercel Blob),
 #          GOOGLE_MAPS_API_KEY, RESEND_API_KEY, WHATSAPP_API_TOKEN
 
+# Seed RAG knowledge bases
+pnpm rag:ingest
+
 # Run database migrations
 pnpm drizzle-kit push
 
@@ -200,5 +216,7 @@ pnpm dev
 ## Reference
 
 - [Vercel AI SDK Docs](https://sdk.vercel.ai/docs)
+- [Vercel AI SDK `embed` reference](https://sdk.vercel.ai/docs/reference/ai-sdk-core/embed)
+- [NeonDB pgvector docs](https://neon.tech/docs/extensions/pgvector)
 - [CMR Convention](https://unece.org/transport/road-transport/cmr-convention) — international road goods transport waybill standard used for cross-border car transport
 
