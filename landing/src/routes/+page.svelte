@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { translations, type Lang } from '$lib/translations.js';
 
 	// ── Reactive state ───────────────────────────────────────────────
+	let lang = $state<Lang>('en');
+	let t = $derived(translations[lang]);
+
 	let activeTab = $state('customer');
 	let menuOpen = $state(false);
 
@@ -12,6 +16,13 @@
 	let email = $state('');
 	let quoteSubmitted = $state(false);
 	let quoteFields = $state({ pickup: true, delivery: true, car: true, email: true });
+
+	function setLang(l: Lang) {
+		lang = l;
+		if (typeof localStorage !== 'undefined') {
+			localStorage.setItem('shutup-lang', l);
+		}
+	}
 
 	function handleQuoteSubmit() {
 		quoteFields = {
@@ -30,6 +41,10 @@
 
 	// ── Browser-only setup ───────────────────────────────────────────
 	onMount(async () => {
+		// Restore language preference
+		const saved = localStorage.getItem('shutup-lang') as Lang | null;
+		if (saved === 'en' || saved === 'de') lang = saved;
+
 		// Mermaid
 		const { default: mermaid } = await import('mermaid');
 		mermaid.initialize({
@@ -101,11 +116,8 @@
 </script>
 
 <svelte:head>
-	<title>ShutUP Forwarder — AI-Powered Car Transport</title>
-	<meta
-		name="description"
-		content="Take a photo of your car, tell us where it needs to go. Our AI finds a driver, negotiates the price, tracks the journey, and protects you if anything goes wrong."
-	/>
+	<title>{t.page_title}</title>
+	<meta name="description" content={t.page_desc} />
 </svelte:head>
 
 <!-- ─── NAV ─────────────────────────────────────────────────────── -->
@@ -117,21 +129,25 @@
 		</a>
 		<nav class="nav__links" class:open={menuOpen} aria-label="Main navigation">
 			<!-- svelte-ignore a11y_invalid_attribute -->
-			<a href="#how-it-works" onclick={() => (menuOpen = false)}>How it works</a>
+			<a href="#how-it-works" onclick={() => (menuOpen = false)}>{t.nav_how}</a>
 			<!-- svelte-ignore a11y_invalid_attribute -->
-			<a href="#step-by-step" onclick={() => (menuOpen = false)}>Step by step</a>
+			<a href="#step-by-step" onclick={() => (menuOpen = false)}>{t.nav_step}</a>
 			<!-- svelte-ignore a11y_invalid_attribute -->
-			<a href="#features" onclick={() => (menuOpen = false)}>Features</a>
+			<a href="#features" onclick={() => (menuOpen = false)}>{t.nav_features}</a>
 			<!-- svelte-ignore a11y_invalid_attribute -->
-			<a href="#screens" onclick={() => (menuOpen = false)}>Screens</a>
+			<a href="#screens" onclick={() => (menuOpen = false)}>{t.nav_screens}</a>
 			<!-- svelte-ignore a11y_invalid_attribute -->
-			<a href="#faq" onclick={() => (menuOpen = false)}>FAQ</a>
+			<a href="#faq" onclick={() => (menuOpen = false)}>{t.nav_faq}</a>
 			<!-- svelte-ignore a11y_invalid_attribute -->
-			<a href="#drivers" class="nav__driver-link" onclick={() => (menuOpen = false)}>For Drivers</a>
+			<a href="#drivers" class="nav__driver-link" onclick={() => (menuOpen = false)}>{t.nav_drivers}</a>
 		</nav>
 		<div class="nav__actions" class:open={menuOpen}>
-			<a href="#" class="btn btn--ghost">Sign in</a>
-			<a href="#quote" class="btn btn--primary">Get a quote</a>
+			<div class="lang-switcher">
+				<button class="lang-btn" class:active={lang === 'en'} onclick={() => setLang('en')}>EN</button>
+				<button class="lang-btn" class:active={lang === 'de'} onclick={() => setLang('de')}>DE</button>
+			</div>
+			<a href="#" class="btn btn--ghost">{t.nav_signin}</a>
+			<a href="#quote" class="btn btn--primary">{t.nav_quote}</a>
 		</div>
 		<button
 			class="nav__burger"
@@ -148,31 +164,27 @@
 <section class="hero">
 	<div class="hero__bg-grid"></div>
 	<div class="container hero__inner">
-		<div class="badge">✦ Now with AI negotiation</div>
+		<div class="badge">{t.hero_badge}</div>
 		<h1 class="hero__headline">
-			Your car, transported.<br />
-			<span class="gradient-text">Zero stress.</span>
+			{t.hero_h1_1}<br />
+			<span class="gradient-text">{t.hero_h1_2}</span>
 		</h1>
-		<p class="hero__sub">
-			Snap a photo, drop a pin. Our AI finds a verified driver, locks in the best price, and
-			watches over your car from pickup to delivery — with a photo record that protects you if
-			anything goes wrong.
-		</p>
+		<p class="hero__sub">{t.hero_sub}</p>
 		<div class="hero__ctas">
-			<a href="#quote" class="btn btn--primary btn--lg">Get an instant quote →</a>
-			<a href="#how-it-works" class="btn btn--ghost btn--lg">See how it works</a>
+			<a href="#quote" class="btn btn--primary btn--lg">{t.hero_cta_primary}</a>
+			<a href="#how-it-works" class="btn btn--ghost btn--lg">{t.hero_cta_secondary}</a>
 		</div>
 		<div class="hero__trust">
 			<div class="trust-item">
 				<span class="trust-stars">★★★★★</span>
-				<span>4.8 · 2 000+ transports</span>
+				<span>{t.hero_trust_rating}</span>
 			</div>
 			<div class="trust-divider"></div>
-			<div class="trust-item">🔒 Photos locked at pickup</div>
+			<div class="trust-item">{t.hero_trust_photos}</div>
 			<div class="trust-divider"></div>
-			<div class="trust-item">🤖 AI negotiates for you</div>
+			<div class="trust-item">{t.hero_trust_ai}</div>
 			<div class="trust-divider"></div>
-			<div class="trust-item">🇪🇺 All of Europe covered</div>
+			<div class="trust-item">{t.hero_trust_europe}</div>
 		</div>
 	</div>
 
@@ -181,19 +193,19 @@
 			<div class="phone-screen">
 				<div class="phone-bar">
 					<span class="phone-dot"></span>
-					<span class="phone-title">Job #SF-4821</span>
+					<span class="phone-title">{t.phone_job}</span>
 					<span class="phone-dot"></span>
 				</div>
-				<div class="phone-row phone-route">Amsterdam → Munich</div>
-				<div class="phone-row phone-car">BMW 3 Series · 2019</div>
+				<div class="phone-row phone-route">{t.phone_route}</div>
+				<div class="phone-row phone-car">{t.phone_car}</div>
 				<div class="phone-timeline">
-					<div class="tl-item tl-done">✅ Car collected · Thu 09:00</div>
-					<div class="tl-item tl-done">✅ Departed Netherlands</div>
-					<div class="tl-item tl-active">◉ Cologne — on schedule</div>
-					<div class="tl-item tl-future">○ Munich · Est. Sat 09:00</div>
+					<div class="tl-item tl-done">{t.phone_collected}</div>
+					<div class="tl-item tl-done">{t.phone_departed}</div>
+					<div class="tl-item tl-active">{t.phone_active}</div>
+					<div class="tl-item tl-future">{t.phone_future}</div>
 				</div>
 				<div class="phone-driver">
-					<span>🚛 Pieter van Dam</span>
+					<span>{t.phone_driver}</span>
 					<span class="driver-stars">★★★★☆ 4.7</span>
 				</div>
 				<div class="phone-actions">
@@ -208,39 +220,30 @@
 <!-- ─── HOW IT WORKS ──────────────────────────────────────────────── -->
 <section class="section" id="how-it-works">
 	<div class="container">
-		<div class="section-label">Simple process</div>
-		<h2 class="section-title">From photo to delivery in 3 steps</h2>
-		<p class="section-sub">You do three things. The AI does the rest.</p>
+		<div class="section-label">{t.how_label}</div>
+		<h2 class="section-title">{t.how_title}</h2>
+		<p class="section-sub">{t.how_sub}</p>
 
 		<div class="steps">
 			<div class="step">
 				<div class="step__num">01</div>
 				<div class="step__icon">📋</div>
-				<h3>Submit your car</h3>
-				<p>
-					Fill in your car's details, snap photos of every angle (our AI spots existing damage
-					instantly), and enter pickup and delivery addresses.
-				</p>
+				<h3>{t.step1_title}</h3>
+				<p>{t.step1_desc}</p>
 			</div>
 			<div class="step__connector"></div>
 			<div class="step">
 				<div class="step__num">02</div>
 				<div class="step__icon">🤖</div>
-				<h3>AI finds you a driver</h3>
-				<p>
-					We broadcast your job to verified drivers. Our AI evaluates bids and negotiates the best
-					price for you — usually within 3 hours.
-				</p>
+				<h3>{t.step2_title}</h3>
+				<p>{t.step2_desc}</p>
 			</div>
 			<div class="step__connector"></div>
 			<div class="step">
 				<div class="step__num">03</div>
 				<div class="step__icon">✅</div>
-				<h3>Track, receive, accept</h3>
-				<p>
-					Follow your car live. At delivery, our AI compares before-and-after photos. If nothing
-					changed, tap Accept. If there's damage, we handle the insurance claim.
-				</p>
+				<h3>{t.step3_title}</h3>
+				<p>{t.step3_desc}</p>
 			</div>
 		</div>
 	</div>
@@ -249,107 +252,83 @@
 <!-- ─── FEATURES ─────────────────────────────────────────────────── -->
 <section class="section section--alt" id="features">
 	<div class="container">
-		<div class="section-label">Why us</div>
-		<h2 class="section-title">Everything handled for you</h2>
-		<p class="section-sub">
-			Not a form that sends you emails. A system that actually does the work.
-		</p>
+		<div class="section-label">{t.features_label}</div>
+		<h2 class="section-title">{t.features_title}</h2>
+		<p class="section-sub">{t.features_sub}</p>
 
 		<div class="features-grid">
 			<div class="feature-card">
 				<div class="feature-icon">🤝</div>
-				<h3>AI price negotiation</h3>
-				<p>
-					Our AI negotiates on your behalf in real time. It knows what a fair price looks like for
-					every route in Europe and won't budge past your budget.
-				</p>
+				<h3>{t.feat1_title}</h3>
+				<p>{t.feat1_desc}</p>
 			</div>
 			<div class="feature-card">
 				<div class="feature-icon">📸</div>
-				<h3>Locked photo evidence</h3>
-				<p>
-					Three immutable photo sets — yours at submission, driver's at pickup, driver's at
-					delivery. No one can alter them. You're always protected.
-				</p>
+				<h3>{t.feat2_title}</h3>
+				<p>{t.feat2_desc}</p>
 			</div>
 			<div class="feature-card">
 				<div class="feature-icon">📍</div>
-				<h3>Live tracking</h3>
-				<p>
-					Know exactly where your car is at any time. Automatic status updates via WhatsApp, email,
-					or push — no chasing needed.
-				</p>
+				<h3>{t.feat3_title}</h3>
+				<p>{t.feat3_desc}</p>
 			</div>
 			<div class="feature-card">
 				<div class="feature-icon">🔍</div>
-				<h3>Instant damage detection</h3>
-				<p>
-					AI compares before and after photos pixel by pixel. New scratches don't slip through.
-					Every difference is flagged with photo evidence attached.
-				</p>
+				<h3>{t.feat4_title}</h3>
+				<p>{t.feat4_desc}</p>
 			</div>
 			<div class="feature-card">
 				<div class="feature-icon">📄</div>
-				<h3>Insurance claim handled</h3>
-				<p>
-					If damage is detected, our AI drafts the claim with all evidence. A qualified adjuster
-					reviews it — you don't deal with the insurer yourself.
-				</p>
+				<h3>{t.feat5_title}</h3>
+				<p>{t.feat5_desc}</p>
 			</div>
 			<div class="feature-card">
 				<div class="feature-icon">📜</div>
-				<h3>Compliance built in</h3>
-				<p>
-					Cross-border paperwork (CMR waybills, customs forms, power of attorney) is checked
-					automatically before your job is dispatched.
-				</p>
+				<h3>{t.feat6_title}</h3>
+				<p>{t.feat6_desc}</p>
 			</div>
 		</div>
 	</div>
 </section>
-
 <!-- ─── PROTECTION ────────────────────────────────────────────────── -->
 <section class="section" id="protection">
 	<div class="container">
-		<div class="section-label">Evidence chain</div>
-		<h2 class="section-title">Your car is protected at every handover</h2>
-		<p class="section-sub">
-			Three locked photo sets create an unbreakable record — before, during, and after.
-		</p>
+		<div class="section-label">{t.prot_label}</div>
+		<h2 class="section-title">{t.prot_title}</h2>
+		<p class="section-sub">{t.prot_sub}</p>
 
 		<div class="evidence-chain">
 			<div class="evidence-step">
 				<div class="evidence-icon">📱</div>
-				<h4>You upload</h4>
-				<p>All sides + existing damage noted by AI at submission</p>
+				<h4>{t.ev1_title}</h4>
+				<p>{t.ev1_desc}</p>
 				<div class="evidence-badge">🔒 Locked</div>
 			</div>
 			<div class="evidence-arrow">→</div>
 			<div class="evidence-step">
 				<div class="evidence-icon">🚛</div>
-				<h4>Driver at pickup</h4>
-				<p>Mandatory photo set before loading. Cannot proceed without it.</p>
+				<h4>{t.ev2_title}</h4>
+				<p>{t.ev2_desc}</p>
 				<div class="evidence-badge">🔒 Locked</div>
 			</div>
 			<div class="evidence-arrow">→</div>
 			<div class="evidence-step">
 				<div class="evidence-icon">🏠</div>
-				<h4>Driver at delivery</h4>
-				<p>Full photo set at destination before handover.</p>
+				<h4>{t.ev3_title}</h4>
+				<p>{t.ev3_desc}</p>
 				<div class="evidence-badge">🔒 Locked</div>
 			</div>
 			<div class="evidence-arrow">→</div>
 			<div class="evidence-step evidence-step--result">
 				<div class="evidence-icon">🤖</div>
-				<h4>AI compares all 3</h4>
-				<p>Any new damage is caught, documented, and flagged automatically.</p>
+				<h4>{t.ev4_title}</h4>
+				<p>{t.ev4_desc}</p>
 				<div class="evidence-badge evidence-badge--ai">✦ AI Report</div>
 			</div>
 		</div>
 
 		<div class="protection-note">
-			<strong>Important:</strong> The AI's damage report is advisory. A qualified human insurance
-			adjuster always reviews any claim before it is filed. No automated liability decisions.
+			<strong>{t.prot_note_strong}</strong> {t.prot_note}
 		</div>
 	</div>
 </section>
@@ -357,32 +336,32 @@
 <!-- ─── FOR WHO ───────────────────────────────────────────────────── -->
 <section class="section section--alt" id="for-who">
 	<div class="container">
-		<div class="section-label">Who it's for</div>
-		<h2 class="section-title">For individuals and businesses</h2>
+		<div class="section-label">{t.who_label}</div>
+		<h2 class="section-title">{t.who_title}</h2>
 
 		<div class="for-who-grid">
 			<div class="for-who-card">
 				<div class="for-who-icon">🧑</div>
-				<h3>Individuals</h3>
+				<h3>{t.ind_title}</h3>
 				<ul>
-					<li>Bought a car abroad and need it home</li>
-					<li>Moving and want your car to follow</li>
-					<li>Sending a car to a holiday home</li>
-					<li>Non-running or classic car transport</li>
+					<li>{t.ind_li1}</li>
+					<li>{t.ind_li2}</li>
+					<li>{t.ind_li3}</li>
+					<li>{t.ind_li4}</li>
 				</ul>
-				<a href="#quote" class="btn btn--primary">Get a personal quote</a>
+				<a href="#quote" class="btn btn--primary">{t.ind_cta}</a>
 			</div>
 			<div class="for-who-card for-who-card--business">
-				<div class="for-who-card__badge">Popular for businesses</div>
+				<div class="for-who-card__badge">{t.biz_badge}</div>
 				<div class="for-who-icon">🏢</div>
-				<h3>Businesses</h3>
+				<h3>{t.biz_title}</h3>
 				<ul>
-					<li>Car dealers moving stock between locations</li>
-					<li>Fleet operators relocating vehicles</li>
-					<li>Rental companies balancing depots</li>
-					<li>Wholesalers with regular transport needs</li>
+					<li>{t.biz_li1}</li>
+					<li>{t.biz_li2}</li>
+					<li>{t.biz_li3}</li>
+					<li>{t.biz_li4}</li>
 				</ul>
-				<a href="#quote" class="btn btn--primary">Get a business quote</a>
+				<a href="#quote" class="btn btn--primary">{t.biz_cta}</a>
 			</div>
 		</div>
 	</div>
@@ -392,26 +371,23 @@
 <section class="section drivers-section" id="drivers">
 	<div class="container drivers-inner">
 		<div class="drivers-text">
-			<div class="section-label section-label--light">Are you a driver?</div>
-			<h2 class="section-title section-title--light">Join the forwarder network</h2>
-			<p class="section-sub section-sub--light">
-				Get a real-time feed of available jobs on your routes. Accept at posted rates or
-				counter-bid. Get paid fast. Build your rating.
-			</p>
+			<div class="section-label section-label--light">{t.drv_label}</div>
+			<h2 class="section-title section-title--light">{t.drv_title}</h2>
+			<p class="section-sub section-sub--light">{t.drv_sub}</p>
 			<ul class="driver-perks">
-				<li>✅ Jobs matched to your active routes</li>
-				<li>✅ One-tap accept or counter-bid</li>
-				<li>✅ Clear pickup &amp; delivery instructions</li>
-				<li>✅ Fast payout after delivery confirmation</li>
-				<li>✅ Rating system that rewards reliability</li>
+				<li>{t.drv_li1}</li>
+				<li>{t.drv_li2}</li>
+				<li>{t.drv_li3}</li>
+				<li>{t.drv_li4}</li>
+				<li>{t.drv_li5}</li>
 			</ul>
-			<a href="#" class="btn btn--white btn--lg">Apply as a driver</a>
+			<a href="#" class="btn btn--white btn--lg">{t.drv_cta}</a>
 		</div>
 		<div class="drivers-mockup">
 			<div class="phone-mockup phone-mockup--dark">
 				<div class="phone-screen phone-screen--dark">
 					<div class="phone-bar phone-bar--dark">
-						<span class="phone-title">Available Jobs</span>
+						<span class="phone-title">{t.drv_jobs}</span>
 						<span class="phone-notif">🔔 2</span>
 					</div>
 					<div class="job-card">
@@ -443,11 +419,9 @@
 <!-- ─── FULL JOURNEY DIAGRAM ─────────────────────────────────────── -->
 <section class="section section--alt" id="journey">
 	<div class="container">
-		<div class="section-label">End to end</div>
-		<h2 class="section-title">The complete picture</h2>
-		<p class="section-sub">
-			From the moment you submit your car to the moment you accept delivery — every step is handled.
-		</p>
+		<div class="section-label">{t.jour_label}</div>
+		<h2 class="section-title">{t.jour_title}</h2>
+		<p class="section-sub">{t.jour_sub}</p>
 		<div class="mermaid-wrap">
 			<pre class="mermaid">
 flowchart TD
@@ -472,19 +446,15 @@ flowchart TD
 <!-- ─── STEP BY STEP ──────────────────────────────────────────────── -->
 <section class="section" id="step-by-step">
 	<div class="container">
-		<div class="section-label">Detailed walkthrough</div>
-		<h2 class="section-title">What happens at each stage</h2>
+		<div class="section-label">{t.sbs_label}</div>
+		<h2 class="section-title">{t.sbs_title}</h2>
 
 		<div class="deep-step">
 			<div class="deep-step__header">
-				<div class="deep-step__num">Step 1</div>
-				<h3>You fill in a simple form</h3>
+				<div class="deep-step__num">{t.s1_num}</div>
+				<h3>{t.s1_title}</h3>
 			</div>
-			<p class="deep-step__desc">
-				You tell us about your car and where it needs to go. The app walks you through it in five
-				screens. The AI reads your chassis number automatically — just point the camera at it — and
-				<strong>immediately highlights any existing scratches or dents</strong> as you upload photos.
-			</p>
+			<p class="deep-step__desc">{@html t.s1_desc}</p>
 			<div class="mermaid-wrap">
 				<pre class="mermaid">
 flowchart LR
@@ -495,14 +465,10 @@ flowchart LR
 
 		<div class="deep-step">
 			<div class="deep-step__header">
-				<div class="deep-step__num">Step 2</div>
-				<h3>AI finds you a driver</h3>
+				<div class="deep-step__num">{t.s2_num}</div>
+				<h3>{t.s2_title}</h3>
 			</div>
-			<p class="deep-step__desc">
-				You don't contact anyone. The AI broadcasts your job to our verified driver network and
-				handles all negotiation. It knows what a fair price looks like for every route in Europe —
-				it won't accept too high, and it protects drivers from being pushed unfairly low.
-			</p>
+			<p class="deep-step__desc">{t.s2_desc}</p>
 			<div class="mermaid-wrap">
 				<pre class="mermaid">
 sequenceDiagram
@@ -526,27 +492,18 @@ sequenceDiagram
 
 		<div class="deep-step">
 			<div class="deep-step__header">
-				<div class="deep-step__num">Step 3</div>
-				<h3>Your car is collected</h3>
+				<div class="deep-step__num">{t.s3_num}</div>
+				<h3>{t.s3_title}</h3>
 			</div>
-			<p class="deep-step__desc">
-				The driver arrives at your pickup address. Before loading the car, they take a
-				<strong>mandatory set of photos</strong> through the app — all sides, dashboard, odometer.
-				These are locked immediately and cannot be edited by anyone. This protects both you and the
-				driver. Everyone agrees on the car's exact condition before it moves.
-			</p>
+			<p class="deep-step__desc">{@html t.s3_desc}</p>
 		</div>
 
 		<div class="deep-step">
 			<div class="deep-step__header">
-				<div class="deep-step__num">Step 4</div>
-				<h3>Your car is in transit</h3>
+				<div class="deep-step__num">{t.s4_num}</div>
+				<h3>{t.s4_title}</h3>
 			</div>
-			<p class="deep-step__desc">
-				Follow your car live. The AI sends automatic updates via WhatsApp, email, or push at every
-				milestone. If anything unexpected happens — delay, route change, driver goes silent — the AI
-				alerts you and the team.
-			</p>
+			<p class="deep-step__desc">{t.s4_desc}</p>
 			<div class="mermaid-wrap">
 				<pre class="mermaid">
 flowchart LR
@@ -560,14 +517,10 @@ flowchart LR
 
 		<div class="deep-step">
 			<div class="deep-step__header">
-				<div class="deep-step__num">Step 5</div>
-				<h3>Delivery &amp; damage check</h3>
+				<div class="deep-step__num">{t.s5_num}</div>
+				<h3>{t.s5_title}</h3>
 			</div>
-			<p class="deep-step__desc">
-				At the destination, the driver takes another full photo set. The AI compares them against
-				the pickup photos automatically. Any new damage is flagged with photo evidence. A human
-				insurance adjuster — not an algorithm — reviews every claim before it is filed.
-			</p>
+			<p class="deep-step__desc">{t.s5_desc}</p>
 			<div class="mermaid-wrap">
 				<pre class="mermaid">
 flowchart TD
@@ -585,14 +538,10 @@ flowchart TD
 
 		<div class="deep-step">
 			<div class="deep-step__header">
-				<div class="deep-step__num">Step 6</div>
-				<h3>You accept or dispute</h3>
+				<div class="deep-step__num">{t.s6_num}</div>
+				<h3>{t.s6_title}</h3>
 			</div>
-			<p class="deep-step__desc">
-				You get a delivery summary with all photos. <strong>Everything looks good?</strong> Tap
-				"Accept" — job complete. <strong>Something isn't right?</strong> Tap "Dispute" — a team
-				member reviews it with the full photo and log trail on hand.
-			</p>
+			<p class="deep-step__desc">{@html t.s6_desc}</p>
 		</div>
 	</div>
 </section>
@@ -600,9 +549,9 @@ flowchart TD
 <!-- ─── WHO IS INVOLVED ────────────────────────────────────────────── -->
 <section class="section section--alt" id="agents">
 	<div class="container">
-		<div class="section-label">People &amp; AI</div>
-		<h2 class="section-title">Who is involved — and who does what</h2>
-		<p class="section-sub">AI handles speed and scale. Humans handle trust and liability.</p>
+		<div class="section-label">{t.agents_label}</div>
+		<h2 class="section-title">{t.agents_title}</h2>
+		<p class="section-sub">{t.agents_sub}</p>
 
 		<div class="mermaid-wrap mermaid-wrap--wide">
 			<pre class="mermaid">
@@ -640,28 +589,28 @@ graph TD
 		<div class="roles-table-wrap">
 			<table class="roles-table">
 				<thead>
-					<tr><th>Who</th><th>What they do</th></tr>
+					<tr><th>{t.roles_who}</th><th>{t.roles_what}</th></tr>
 				</thead>
 				<tbody>
 					<tr>
-						<td>🧑 <strong>You (Customer)</strong></td>
-						<td>Submit the job, track progress, accept or dispute delivery</td>
+						<td>🧑 <strong>{t.role_customer}</strong></td>
+						<td>{t.role_customer_desc}</td>
 					</tr>
 					<tr>
-						<td>🚛 <strong>Driver / Forwarder</strong></td>
-						<td>Pick up and deliver the car, take photos at both ends</td>
+						<td>🚛 <strong>{t.role_driver}</strong></td>
+						<td>{t.role_driver_desc}</td>
 					</tr>
 					<tr>
-						<td>👩‍💼 <strong>Operations Manager</strong></td>
-						<td>Steps in when price negotiations stall or something unusual happens</td>
+						<td>👩‍💼 <strong>{t.role_ops}</strong></td>
+						<td>{t.role_ops_desc}</td>
 					</tr>
 					<tr>
-						<td>👨‍💼 <strong>Insurance Adjuster</strong></td>
-						<td>Reviews any damage claim the AI drafts before it goes to the insurer</td>
+						<td>👨‍💼 <strong>{t.role_adjuster}</strong></td>
+						<td>{t.role_adjuster_desc}</td>
 					</tr>
 					<tr>
-						<td>🔧 <strong>Platform Admin</strong></td>
-						<td>Keeps the system running, vets drivers, manages content</td>
+						<td>🔧 <strong>{t.role_admin}</strong></td>
+						<td>{t.role_admin_desc}</td>
 					</tr>
 				</tbody>
 			</table>
@@ -672,12 +621,9 @@ graph TD
 <!-- ─── SCREEN WIREFRAMES ─────────────────────────────────────────── -->
 <section class="section" id="screens">
 	<div class="container">
-		<div class="section-label">App screens</div>
-		<h2 class="section-title">What the app looks like</h2>
-		<p class="section-sub">
-			Every screen is designed around one principle: make the right action obvious and everything
-			else automatic.
-		</p>
+		<div class="section-label">{t.screens_label}</div>
+		<h2 class="section-title">{t.screens_title}</h2>
+		<p class="section-sub">{t.screens_sub}</p>
 
 		<div class="screens-tabs">
 			<div class="screens-tab-bar">
@@ -685,24 +631,24 @@ graph TD
 					class="screens-tab"
 					class:active={activeTab === 'customer'}
 					onclick={() => (activeTab = 'customer')}
-				>Customer App</button>
+				>{t.tab_customer}</button>
 				<button
 					class="screens-tab"
 					class:active={activeTab === 'driver'}
 					onclick={() => (activeTab = 'driver')}
-				>Driver App</button>
+				>{t.tab_driver}</button>
 				<button
 					class="screens-tab"
 					class:active={activeTab === 'ops'}
 					onclick={() => (activeTab = 'ops')}
-				>Ops Dashboard</button>
+				>{t.tab_ops}</button>
 			</div>
 
 			<!-- Customer screens -->
 			<div class="screens-panel" class:active={activeTab === 'customer'}>
 				<div class="screens-grid">
 					<div class="screen-card">
-						<div class="screen-card__label">Screen 1 — Vehicle Details</div>
+						<div class="screen-card__label">{t.sc1_label}</div>
 						<pre class="wireframe">┌──────────────────────────────────┐
 │  ShutUP Forwarder             ≡  │
 │──────────────────────────────────│
@@ -731,11 +677,11 @@ graph TD
 │  │         Next →           │   │
 │  └──────────────────────────┘   │
 └──────────────────────────────────┘</pre>
-						<p class="screen-card__note">AI reads the VIN from a camera scan — no typing required.</p>
+						<p class="screen-card__note">{t.sc1_note}</p>
 					</div>
 
 					<div class="screen-card">
-						<div class="screen-card__label">Screen 2 — Photo Upload</div>
+						<div class="screen-card__label">{t.sc2_label}</div>
 						<pre class="wireframe">┌──────────────────────────────────┐
 │  ShutUP Forwarder             ≡  │
 │──────────────────────────────────│
@@ -762,11 +708,11 @@ graph TD
 │  │  ✏️ Confirm & Next →     │   │
 │  └──────────────────────────┘   │
 └──────────────────────────────────┘</pre>
-						<p class="screen-card__note">AI annotates damage in real time as each photo uploads.</p>
+						<p class="screen-card__note">{t.sc2_note}</p>
 					</div>
 
 					<div class="screen-card">
-						<div class="screen-card__label">Screen 3 — Transport Details</div>
+						<div class="screen-card__label">{t.sc3_label}</div>
 						<pre class="wireframe">┌──────────────────────────────────┐
 │  ShutUP Forwarder             ≡  │
 │──────────────────────────────────│
@@ -796,13 +742,11 @@ graph TD
 │  │         Next →           │   │
 │  └──────────────────────────┘   │
 └──────────────────────────────────┘</pre>
-						<p class="screen-card__note">
-							Address autocomplete powered by Google Maps. Compliance checked automatically.
-						</p>
+						<p class="screen-card__note">{t.sc3_note}</p>
 					</div>
 
 					<div class="screen-card">
-						<div class="screen-card__label">Screen 4 — AI Working</div>
+						<div class="screen-card__label">{t.sc4_label}</div>
 						<pre class="wireframe">┌──────────────────────────────────┐
 │  ShutUP Forwarder             ≡  │
 │──────────────────────────────────│
@@ -826,11 +770,11 @@ graph TD
 │  You'll hear back in &lt;3 hours.   │
 │                                  │
 └──────────────────────────────────┘</pre>
-						<p class="screen-card__note">Live progress — you see exactly what the AI is doing.</p>
+						<p class="screen-card__note">{t.sc4_note}</p>
 					</div>
 
 					<div class="screen-card">
-						<div class="screen-card__label">Screen 5 — Live Tracking</div>
+						<div class="screen-card__label">{t.sc5_label}</div>
 						<pre class="wireframe">┌──────────────────────────────────┐
 │  ShutUP Forwarder             ≡  │
 │──────────────────────────────────│
@@ -852,11 +796,11 @@ graph TD
 │  [ 📞 Call ]   [ 💬 Message ]   │
 │                                  │
 └──────────────────────────────────┘</pre>
-						<p class="screen-card__note">Real-time progress + direct contact with your driver.</p>
+						<p class="screen-card__note">{t.sc5_note}</p>
 					</div>
 
 					<div class="screen-card">
-						<div class="screen-card__label">Screen 6 — Delivery Report</div>
+						<div class="screen-card__label">{t.sc6_label}</div>
 						<pre class="wireframe">┌──────────────────────────────────┐
 │  ShutUP Forwarder             ≡  │
 │──────────────────────────────────│
@@ -881,7 +825,7 @@ graph TD
 │  │ ✅ Accept     │ │⚠️ Dispute│ │
 │  └───────────────┘ └──────────┘ │
 └──────────────────────────────────┘</pre>
-						<p class="screen-card__note">Side-by-side before/after photos. One tap to accept.</p>
+						<p class="screen-card__note">{t.sc6_note}</p>
 					</div>
 				</div>
 			</div>
@@ -890,7 +834,7 @@ graph TD
 			<div class="screens-panel" class:active={activeTab === 'driver'}>
 				<div class="screens-grid">
 					<div class="screen-card">
-						<div class="screen-card__label">Screen 7 — Job Feed</div>
+						<div class="screen-card__label">{t.sc7_label}</div>
 						<pre class="wireframe">┌──────────────────────────────────┐
 │  ≡  Forwarder App        🔔 2   │
 │──────────────────────────────────│
@@ -918,13 +862,11 @@ graph TD
 │  │  └──────────┘ └────────┘ │   │
 │  └──────────────────────────┘   │
 └──────────────────────────────────┘</pre>
-						<p class="screen-card__note">
-							Real-time job feed matched to your registered route network.
-						</p>
+						<p class="screen-card__note">{t.sc7_note}</p>
 					</div>
 
 					<div class="screen-card">
-						<div class="screen-card__label">Screen 8 — Pickup Confirmation</div>
+						<div class="screen-card__label">{t.sc8_label}</div>
 						<pre class="wireframe">┌──────────────────────────────────┐
 │  ←  Job #SF-4821                 │
 │──────────────────────────────────│
@@ -953,9 +895,7 @@ graph TD
 │  │  🔒 Lock & Confirm (1 ✗) │   │
 │  └──────────────────────────┘   │
 └──────────────────────────────────┘</pre>
-						<p class="screen-card__note">
-							The confirm button stays locked until every required photo is taken.
-						</p>
+						<p class="screen-card__note">{t.sc8_note}</p>
 					</div>
 				</div>
 			</div>
@@ -964,7 +904,7 @@ graph TD
 			<div class="screens-panel" class:active={activeTab === 'ops'}>
 				<div class="screens-grid screens-grid--wide">
 					<div class="screen-card screen-card--wide">
-						<div class="screen-card__label">Operations Manager Dashboard</div>
+						<div class="screen-card__label">{t.sc_ops_label}</div>
 						<pre class="wireframe wireframe--wide">┌────────────────────────────────────────────────────────────┐
 │  ShutUP Forwarder — Operations Dashboard                   │
 │────────────────────────────────────────────────────────────│
@@ -984,10 +924,7 @@ graph TD
 │────────────────────────────────────────────────────────────│
 │  14 jobs running smoothly — no action needed               │
 └────────────────────────────────────────────────────────────┘</pre>
-						<p class="screen-card__note">
-							The AI surfaces only the jobs that genuinely need a human decision. Everything else
-							runs automatically.
-						</p>
+						<p class="screen-card__note">{t.sc_ops_note}</p>
 					</div>
 				</div>
 			</div>
@@ -998,53 +935,32 @@ graph TD
 <!-- ─── FAQ ───────────────────────────────────────────────────────── -->
 <section class="section section--alt" id="faq">
 	<div class="container faq-container">
-		<div class="section-label">Questions</div>
-		<h2 class="section-title">Frequently asked questions</h2>
+		<div class="section-label">{t.faq_label}</div>
+		<h2 class="section-title">{t.faq_title}</h2>
 		<div class="faq-list">
 			<details class="faq-item">
-				<summary>Do I need to be there when the car is collected?</summary>
-				<p>
-					Not necessarily — you just need to ensure the driver can access the vehicle. The app
-					coordinates the handover details and the driver takes the mandatory photo set before
-					loading.
-				</p>
+				<summary>{t.faq_q1}</summary>
+				<p>{t.faq_a1}</p>
 			</details>
 			<details class="faq-item">
-				<summary>What if my car doesn't run?</summary>
-				<p>
-					Note it in the form. Drivers who can handle non-running vehicles will see the job, and
-					the price will reflect the extra equipment required.
-				</p>
+				<summary>{t.faq_q2}</summary>
+				<p>{t.faq_a2}</p>
 			</details>
 			<details class="faq-item">
-				<summary>How long does transport take?</summary>
-				<p>
-					Within a country: usually 1–3 days. Across Europe: typically 5–10 working days depending
-					on distance and route.
-				</p>
+				<summary>{t.faq_q3}</summary>
+				<p>{t.faq_a3}</p>
 			</details>
 			<details class="faq-item">
-				<summary>What if I disagree with the AI's damage assessment?</summary>
-				<p>
-					Tap "Dispute." A human team member reviews the full evidence trail — all three photo sets
-					and the audit log — and makes the final call. The AI's report is advisory, never final.
-				</p>
+				<summary>{t.faq_q4}</summary>
+				<p>{t.faq_a4}</p>
 			</details>
 			<details class="faq-item">
-				<summary>Is my car insured during transport?</summary>
-				<p>
-					The driver's carrier liability covers the vehicle during transit. Our AI-assisted photo
-					record ensures any new damage is documented, evidence-backed, and claimable.
-				</p>
+				<summary>{t.faq_q5}</summary>
+				<p>{t.faq_a5}</p>
 			</details>
 			<details class="faq-item">
-				<summary>How does the AI negotiate the price?</summary>
-				<p>
-					The AI broadcasts your job to matching drivers, evaluates their bids against historical
-					pricing data for your route, and negotiates within bounds set by our Operations Manager.
-					It cannot agree to a price above your budget or below the driver's minimum — if no deal
-					is reached, a human steps in.
-				</p>
+				<summary>{t.faq_q6}</summary>
+				<p>{t.faq_a6}</p>
 			</details>
 		</div>
 	</div>
@@ -1053,35 +969,23 @@ graph TD
 <!-- ─── TESTIMONIALS ─────────────────────────────────────────────── -->
 <section class="section" id="testimonials">
 	<div class="container">
-		<div class="section-label">Reviews</div>
-		<h2 class="section-title">What customers say</h2>
+		<div class="section-label">{t.test_label}</div>
+		<h2 class="section-title">{t.test_title}</h2>
 		<div class="testimonials-grid">
 			<div class="testimonial">
 				<div class="testimonial-stars">★★★★★</div>
-				<p>
-					"I bought a BMW in Belgium and needed it delivered to Hamburg. The AI found a driver
-					within 2 hours, the price was fair, and I tracked everything live. Arrived without a
-					single new scratch."
-				</p>
-				<div class="testimonial-author">— Luc L., private buyer</div>
+				<p>{t.test1_text}</p>
+				<div class="testimonial-author">{t.test1_author}</div>
 			</div>
 			<div class="testimonial">
 				<div class="testimonial-stars">★★★★★</div>
-				<p>
-					"We move 20–30 vehicles a month between our dealerships. ShutUP Forwarder cut our
-					coordination time by 80%. The photo evidence system alone is worth it — disputes
-					basically don't happen anymore."
-				</p>
-				<div class="testimonial-author">— Steven V., car dealer</div>
+				<p>{t.test2_text}</p>
+				<div class="testimonial-author">{t.test2_author}</div>
 			</div>
 			<div class="testimonial">
 				<div class="testimonial-stars">★★★★★</div>
-				<p>
-					"My classic Triumph needed moving from Finland to Belgium. I was nervous. The team kept
-					me informed every step, the driver was fantastic, and delivery photos confirmed no
-					issues. Couldn't ask for more."
-				</p>
-				<div class="testimonial-author">— Wouter V., classic car owner</div>
+				<p>{t.test3_text}</p>
+				<div class="testimonial-author">{t.test3_author}</div>
 			</div>
 		</div>
 	</div>
@@ -1090,27 +994,27 @@ graph TD
 <!-- ─── QUOTE CTA ─────────────────────────────────────────────────── -->
 <section class="section cta-section" id="quote">
 	<div class="container cta-inner">
-		<h2 class="cta-title">Ready to move your car?</h2>
-		<p class="cta-sub">Tell us about your car and route. We'll handle everything else.</p>
+		<h2 class="cta-title">{t.cta_title}</h2>
+		<p class="cta-sub">{t.cta_sub}</p>
 		<div class="quote-form">
 			<div class="quote-row">
 				<div class="quote-field">
-					<label for="pickup">Pickup address</label>
+					<label for="pickup">{t.quote_pickup_label}</label>
 					<input
 						id="pickup"
 						type="text"
-						placeholder="e.g. Amsterdam, Netherlands"
+						placeholder={t.quote_pickup_ph}
 						bind:value={pickupAddr}
 						style={!quoteFields.pickup ? 'border-color: #f87171' : ''}
 					/>
 				</div>
 				<div class="quote-arrow">→</div>
 				<div class="quote-field">
-					<label for="delivery">Delivery address</label>
+					<label for="delivery">{t.quote_delivery_label}</label>
 					<input
 						id="delivery"
 						type="text"
-						placeholder="e.g. Munich, Germany"
+						placeholder={t.quote_delivery_ph}
 						bind:value={deliveryAddr}
 						style={!quoteFields.delivery ? 'border-color: #f87171' : ''}
 					/>
@@ -1118,21 +1022,21 @@ graph TD
 			</div>
 			<div class="quote-row quote-row--bottom">
 				<div class="quote-field">
-					<label for="car">Car make &amp; model</label>
+					<label for="car">{t.quote_car_label}</label>
 					<input
 						id="car"
 						type="text"
-						placeholder="e.g. BMW 3 Series 2019"
+						placeholder={t.quote_car_ph}
 						bind:value={carModel}
 						style={!quoteFields.car ? 'border-color: #f87171' : ''}
 					/>
 				</div>
 				<div class="quote-field">
-					<label for="email">Your email</label>
+					<label for="email">{t.quote_email_label}</label>
 					<input
 						id="email"
 						type="email"
-						placeholder="you@example.com"
+						placeholder={t.quote_email_ph}
 						bind:value={email}
 						style={!quoteFields.email ? 'border-color: #f87171' : ''}
 					/>
@@ -1142,10 +1046,10 @@ graph TD
 					disabled={quoteSubmitted}
 					onclick={handleQuoteSubmit}
 				>
-					{quoteSubmitted ? '✅ Request received!' : 'Get my quote →'}
+					{quoteSubmitted ? t.quote_submitted : t.quote_btn}
 				</button>
 			</div>
-			<p class="quote-note">No account needed. Quote in under 3 hours. No spam.</p>
+			<p class="quote-note">{t.quote_note}</p>
 		</div>
 	</div>
 </section>
@@ -1158,7 +1062,7 @@ graph TD
 				<span class="logo-icon">🚗</span>
 				<span>ShutUP <strong>Forwarder</strong></span>
 			</a>
-			<p>AI-powered car transport across Europe. Fast, fair, fully tracked.</p>
+			<p>{t.footer_tagline}</p>
 			<div class="footer-social">
 				<a href="#" aria-label="LinkedIn">in</a>
 				<a href="#" aria-label="Instagram">ig</a>
@@ -1167,39 +1071,39 @@ graph TD
 		</div>
 		<div class="footer-links">
 			<div class="footer-col">
-				<h5>Platform</h5>
-				<a href="#how-it-works">How it works</a>
-				<a href="#features">Features</a>
-				<a href="#protection">Car protection</a>
-				<a href="#for-who">For businesses</a>
-				<a href="#drivers">For drivers</a>
+				<h5>{t.footer_platform}</h5>
+				<a href="#how-it-works">{t.footer_how}</a>
+				<a href="#features">{t.footer_features}</a>
+				<a href="#protection">{t.footer_protection}</a>
+				<a href="#for-who">{t.footer_businesses}</a>
+				<a href="#drivers">{t.footer_drivers}</a>
 			</div>
 			<div class="footer-col">
-				<h5>Routes</h5>
-				<a href="#">Netherlands</a>
-				<a href="#">Germany</a>
-				<a href="#">Belgium</a>
-				<a href="#">France</a>
-				<a href="#">All of Europe</a>
+				<h5>{t.footer_routes}</h5>
+				<a href="#">{t.footer_nl}</a>
+				<a href="#">{t.footer_de}</a>
+				<a href="#">{t.footer_be}</a>
+				<a href="#">{t.footer_fr}</a>
+				<a href="#">{t.footer_europe}</a>
 			</div>
 			<div class="footer-col">
-				<h5>Company</h5>
-				<a href="#">About us</a>
-				<a href="#">Blog</a>
-				<a href="#">Careers</a>
-				<a href="#">Contact</a>
+				<h5>{t.footer_company}</h5>
+				<a href="#">{t.footer_about}</a>
+				<a href="#">{t.footer_blog}</a>
+				<a href="#">{t.footer_careers}</a>
+				<a href="#">{t.footer_contact}</a>
 			</div>
 			<div class="footer-col">
-				<h5>Legal</h5>
-				<a href="#">Terms of service</a>
-				<a href="#">Privacy policy</a>
-				<a href="#">Cookie policy</a>
-				<a href="#">CMR Convention</a>
+				<h5>{t.footer_legal}</h5>
+				<a href="#">{t.footer_terms}</a>
+				<a href="#">{t.footer_privacy}</a>
+				<a href="#">{t.footer_cookies}</a>
+				<a href="#">{t.footer_cmr}</a>
 			</div>
 		</div>
 	</div>
 	<div class="container footer-bottom">
-		<span>© 2026 ShutUP Forwarder. All rights reserved.</span>
-		<span>Built with the Vercel AI SDK</span>
+		<span>{t.footer_copyright}</span>
+		<span>{t.footer_built}</span>
 	</div>
 </footer>
