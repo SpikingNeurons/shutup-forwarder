@@ -1,25 +1,25 @@
 import os
-import subprocess
+import sys
 from contextlib import asynccontextmanager
 from typing import Dict, Any
 from pydantic import BaseModel
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from agent import evaluate_job
 
-# --- DYNAMIC PRISMA CLIENT GENERATION HOOK ---
-# This checks for the generated client module before global imports execute
+# --- PURE PYTHON PRISMA SETUP ---
 try:
     from prisma import Prisma
 except ImportError:
-    print("Prisma client not found. Generating it dynamically on the server...")
-    subprocess.run(["prisma", "generate"], check=True)
+    print("Prisma client package missing entirely. Running generator via internal CLI module...")
+    # This invokes the absolute path of the engine module via the current python runner
+    import subprocess
+    subprocess.run([sys.executable, "-m", "prisma", "generate"], check=True)
     from prisma import Prisma
 
 # 1. Initialize our Prisma client instance globally
 db = Prisma()
-
 # 2. Define the lifespan to safely manage generation and database connections
 @asynccontextmanager
 async def lifespan(app: FastAPI):
