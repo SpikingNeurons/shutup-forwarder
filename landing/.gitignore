@@ -7,3 +7,6 @@ node_modules/
 index.html
 styles.css
 app.js
+
+.env
+venv/
