@@ -1,0 +1,65 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+}
+
+// 1. Strict Roles for Login Routing
+enum Role {
+  CUSTOMER
+  FORWARDER
+  ADMIN
+}
+
+// 2. The User Table
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  role      Role     @default(CUSTOMER)
+  
+  createdAt DateTime @default(now())
+
+  // Relations: A user can be a customer who creates jobs, or a forwarder who drives them
+  jobsCreated   Job[] @relation("CustomerJobs")
+  jobsAccepted  Job[] @relation("ForwarderJobs")
+}
+
+model Job {
+  id             String   @id @default(uuid())
+  trackingNumber String   @unique @default(cuid()) 
+  
+  // 3. Foreign Keys: Linking the Job to actual Users
+  customerId     String?  // Made optional temporarily so we don't break your old dummy data
+  customer       User?    @relation("CustomerJobs", fields: [customerId], references: [id])
+  
+  forwarderId    String?  
+  forwarder      User?    @relation("ForwarderJobs", fields: [forwarderId], references: [id])
+
+  // Vehicle Details
+  make           String
+  model          String
+  year           Int
+  runs           String
+  notes          String?
+
+  // Route Details
+  pickup         String
+  delivery       String
+  distance       String
+
+  // AI Evaluation Results
+  aiIsValid      Boolean
+  aiReasoning    String
+  aiComplexity   String
+
+  // System State
+  status         String   @default("Reviewing") 
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

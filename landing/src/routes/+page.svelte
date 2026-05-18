@@ -1,118 +1,149 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { translations, type Lang } from '$lib/translations.js';
+    import { onMount } from 'svelte';
+    import { translations, type Lang } from '$lib/translations.js';
+    import { goto } from '$app/navigation';
+    
 
-	// ── Reactive state ───────────────────────────────────────────────
-	let lang = $state<Lang>('en');
-	let t = $derived(translations[lang]);
+    // ── Reactive state ───────────────────────────────────────────────
+    let lang = $state<Lang>('en');
+    let t = $derived(translations[lang]);
 
-	let activeTab = $state('customer');
-	let menuOpen = $state(false);
+    let activeTab = $state('customer');
+    let menuOpen = $state(false);
+    let isLoggedIn = $state(false);
 
-	// Quote form
-	let pickupAddr = $state('');
-	let deliveryAddr = $state('');
-	let carModel = $state('');
-	let email = $state('');
-	let quoteSubmitted = $state(false);
-	let quoteFields = $state({ pickup: true, delivery: true, car: true, email: true });
+    // Quote form
+    let pickupAddr = $state('');
+    let deliveryAddr = $state('');
+    let carModel = $state('');
+    let email = $state('');
+    let quoteSubmitted = $state(false);
+    let quoteFields = $state({ pickup: true, delivery: true, car: true, email: true });
 
-	function setLang(l: Lang) {
-		lang = l;
-		if (typeof localStorage !== 'undefined') {
-			localStorage.setItem('shutup-lang', l);
-		}
-	}
+    function setLang(l: Lang) {
+        lang = l;
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('shutup-lang', l);
+        }
+    }
 
-	function handleQuoteSubmit() {
-		quoteFields = {
-			pickup: !!pickupAddr.trim(),
-			delivery: !!deliveryAddr.trim(),
-			car: !!carModel.trim(),
-			email: !!email.trim()
-		};
-		if (!Object.values(quoteFields).every(Boolean)) return;
-		quoteSubmitted = true;
-		setTimeout(() => {
-			quoteSubmitted = false;
-			pickupAddr = deliveryAddr = carModel = email = '';
-		}, 3000);
-	}
+    function handleQuoteSubmit() {
+        quoteFields = {
+            pickup: !!pickupAddr.trim(),
+            delivery: !!deliveryAddr.trim(),
+            car: !!carModel.trim(),
+            email: !!email.trim()
+        };
 
-	// ── Browser-only setup ───────────────────────────────────────────
-	onMount(async () => {
-		// Restore language preference
-		const saved = localStorage.getItem('shutup-lang') as Lang | null;
-		if (saved === 'en' || saved === 'de') lang = saved;
+        // If any field is empty, stop and show the red validation warnings
+        if (!Object.values(quoteFields).every(Boolean)) return;
 
-		// Mermaid
-		const { default: mermaid } = await import('mermaid');
-		mermaid.initialize({
-			startOnLoad: false,
-			theme: 'neutral',
-			fontFamily: 'Inter, system-ui, sans-serif',
-			fontSize: 14,
-			flowchart: { curve: 'basis', padding: 20 },
-			sequence: { actorMargin: 60, messageMargin: 40 }
-		});
-		await mermaid.run({ querySelector: '.mermaid' });
+        // Validation passed! Show the success state on the button
+        quoteSubmitted = true;
 
-		// Nav scroll effect
-		const nav = document.getElementById('nav');
-		const onScroll = () => nav?.classList.toggle('scrolled', window.scrollY > 10);
-		window.addEventListener('scroll', onScroll, { passive: true });
+        // Wait 1 second so the user sees the success state, then redirect to the submit page
+        setTimeout(() => {
+            goto('/submit');
+        }, 1000); 
+    }
 
-		// Scroll reveal
-		const revealObserver = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						entry.target.classList.add('visible');
-						revealObserver.unobserve(entry.target);
-					}
-				});
-			},
-			{ threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
-		);
-		const revealSelectors = [
-			'.step', '.feature-card', '.evidence-step', '.for-who-card',
-			'.testimonial', '.section-label', '.section-title', '.section-sub',
-			'.evidence-chain', '.driver-perks', '.protection-note'
-		];
-		revealSelectors.forEach((sel) => {
-			document.querySelectorAll(sel).forEach((el, i) => {
-				el.classList.add('reveal');
-				(el as HTMLElement).style.transitionDelay = `${i * 80}ms`;
-				revealObserver.observe(el);
-			});
-		});
+    // ── Auth Handling ────────────────────────────────────────────────
+    function handleLogout(e: Event) {
+        e.preventDefault();
+        if (typeof window !== 'undefined' && window.Clerk) {
+            window.Clerk.signOut({ redirectUrl: '/' }).then(() => {
+                isLoggedIn = false; // Instantly flip the button back to Sign In
+            });
+        }
+    }
 
-		// Active nav highlight
-		const sections = document.querySelectorAll<HTMLElement>('section[id]');
-		const navAnchors = document.querySelectorAll<HTMLAnchorElement>('.nav__links a[href^="#"]');
-		const sectionObserver = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						navAnchors.forEach((a) => {
-							a.style.color = '';
-							if (a.getAttribute('href') === `#${entry.target.id}`) {
-								a.style.color = 'var(--c-primary)';
-							}
-						});
-					}
-				});
-			},
-			{ threshold: 0.4 }
-		);
-		sections.forEach((s) => sectionObserver.observe(s));
+    // ── Browser-only setup ───────────────────────────────────────────
+    onMount(async () => {
+        // Restore language preference
+        const saved = localStorage.getItem('shutup-lang') as Lang | null;
+        if (saved === 'en' || saved === 'de') lang = saved;
 
-		return () => {
-			window.removeEventListener('scroll', onScroll);
-			revealObserver.disconnect();
-			sectionObserver.disconnect();
-		};
-	});
+        // AUTH CHECK: Wait for Clerk to fully inject into the browser
+        let checkInterval = setInterval(() => {
+            if (typeof window !== 'undefined' && window.Clerk) {
+                clearInterval(checkInterval); // Found it! Stop checking.
+                
+                // If Clerk has a user, flip the button to True
+                if (window.Clerk.user) {
+                    isLoggedIn = true;
+                }
+            }
+        }, 50);
+
+        // Mermaid
+        const { default: mermaid } = await import('mermaid');
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'neutral',
+            fontFamily: 'Inter, system-ui, sans-serif',
+            fontSize: 14,
+            flowchart: { curve: 'basis', padding: 20 },
+            sequence: { actorMargin: 60, messageMargin: 40 }
+        });
+        await mermaid.run({ querySelector: '.mermaid' });
+
+        // Nav scroll effect
+        const nav = document.getElementById('nav');
+        const onScroll = () => nav?.classList.toggle('scrolled', window.scrollY > 10);
+        window.addEventListener('scroll', onScroll, { passive: true });
+
+        // Scroll reveal
+        const revealObserver = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        revealObserver.unobserve(entry.target);
+                    }
+                });
+            },
+            { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+        );
+        const revealSelectors = [
+            '.step', '.feature-card', '.evidence-step', '.for-who-card',
+            '.testimonial', '.section-label', '.section-title', '.section-sub',
+            '.evidence-chain', '.driver-perks', '.protection-note'
+        ];
+        revealSelectors.forEach((sel) => {
+            document.querySelectorAll(sel).forEach((el, i) => {
+                el.classList.add('reveal');
+                (el as HTMLElement).style.transitionDelay = `${i * 80}ms`;
+                revealObserver.observe(el);
+            });
+        });
+
+        // Active nav highlight
+        const sections = document.querySelectorAll<HTMLElement>('section[id]');
+        const navAnchors = document.querySelectorAll<HTMLAnchorElement>('.nav__links a[href^="#"]');
+        const sectionObserver = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        navAnchors.forEach((a) => {
+                            a.style.color = '';
+                            if (a.getAttribute('href') === `#${entry.target.id}`) {
+                                a.style.color = 'var(--c-primary)';
+                            }
+                        });
+                    }
+                });
+            },
+            { threshold: 0.4 }
+        );
+        sections.forEach((s) => sectionObserver.observe(s));
+
+        return () => {
+            clearInterval(checkInterval); // Clean up the interval
+            window.removeEventListener('scroll', onScroll);
+            revealObserver.disconnect();
+            sectionObserver.disconnect();
+        };
+    });
 </script>
 
 <svelte:head>
@@ -142,13 +173,21 @@
 			<a href="#drivers" class="nav__driver-link" onclick={() => (menuOpen = false)}>{t.nav_drivers}</a>
 		</nav>
 		<div class="nav__actions" class:open={menuOpen}>
-			<div class="lang-switcher">
-				<button class="lang-btn" class:active={lang === 'en'} onclick={() => setLang('en')}>EN</button>
-				<button class="lang-btn" class:active={lang === 'de'} onclick={() => setLang('de')}>DE</button>
-			</div>
-			<a href="#" class="btn btn--ghost">{t.nav_signin}</a>
-			<a href="#quote" class="btn btn--primary">{t.nav_quote}</a>
-		</div>
+    <div class="lang-switcher">
+        <button class="lang-btn" class:active={lang === 'en'} onclick={() => setLang('en')}>EN</button>
+        <button class="lang-btn" class:active={lang === 'de'} onclick={() => setLang('de')}>DE</button>
+    </div>
+
+    {#if isLoggedIn}
+        <button class="btn btn--ghost" onclick={handleLogout}>
+            Logout
+        </button>
+    {:else}
+        <a href="/login" class="btn btn--ghost">{t.nav_signin}</a>
+    {/if}
+
+    <a href="#quote" class="btn btn--primary">{t.nav_quote}</a>
+</div>
 		<button
 			class="nav__burger"
 			id="burger"

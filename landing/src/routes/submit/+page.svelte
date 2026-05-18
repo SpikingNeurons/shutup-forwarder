@@ -1,0 +1,288 @@
+<script lang="ts">
+    import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
+
+    let vehicle = {
+        vin: '',
+        make: '',
+        model: '',
+        year: '',
+        fuelType: '',
+        mileage: ''
+    };
+
+    onMount(() => {
+        // Pull the initial data if they came from the homepage form
+        const savedQuote = sessionStorage.getItem('shutup-initial-quote');
+        if (savedQuote) {
+            try {
+                const data = JSON.parse(savedQuote);
+                // Just dropping the raw string into the 'make' field for now
+                // Later you can write logic to split "BMW 3 Series 2019" into separate fields
+                if (data.carModel) vehicle.make = data.carModel;
+            } catch (e) {
+                console.error("Failed to parse initial quote data", e);
+            }
+        }
+    });
+
+    function handleNext(event: Event) {
+    event.preventDefault();
+        
+        console.log("Proceeding to Step 2 with:", vehicle);
+        sessionStorage.setItem('shutup-step1-vehicle', JSON.stringify(vehicle));
+        goto('/submit/photos');
+    }
+</script>
+
+<svelte:head>
+    <title>Step 1: Vehicle Identity | ShutUP Forwarder</title>
+</svelte:head>
+
+<section class="wizard-section">
+    <div class="container wizard-container">
+        <div class="wizard-header">
+            <a href="/" class="back-link">← Back to home</a>
+            <div class="step-indicator">Step 1 of 5</div>
+        </div>
+
+        <div class="wizard-card">
+            <h1 class="wizard-title">Vehicle Identity</h1>
+            <p class="wizard-sub">Tell us the exact details of the vehicle you need to move.</p>
+
+            <form onsubmit={handleNext} class="custom-form">
+                
+                <div class="form-group">
+                    <label for="vin">Chassis / VIN Number</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="vin" bind:value={vehicle.vin} placeholder="e.g. WBA3A5C50CF256551" required />
+                        <button type="button" class="scan-btn" title="Scan with camera">📷</button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="make">Make</label>
+                        <input type="text" id="make" bind:value={vehicle.make} placeholder="e.g. BMW" required />
+                    </div>
+                    <div class="form-group half">
+                        <label for="model">Model</label>
+                        <input type="text" id="model" bind:value={vehicle.model} placeholder="e.g. 3 Series" required />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="year">Year</label>
+                        <input type="number" id="year" bind:value={vehicle.year} placeholder="e.g. 2019" required />
+                    </div>
+                    <div class="form-group half">
+                        <label for="fuel">Fuel Type</label>
+                        <select id="fuel" bind:value={vehicle.fuelType} required>
+                            <option value="" disabled selected>Select...</option>
+                            <option value="Petrol">Petrol</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="Electric">Electric</option>
+                            <option value="Hybrid">Hybrid</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="mileage">Mileage (km)</label>
+                    <input type="number" id="mileage" bind:value={vehicle.mileage} placeholder="e.g. 87000" required />
+                </div>
+
+                <button type="submit" class="submit-btn">Next: Upload Photos →</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Scoped styles to give this page a premium dark-mode aesthetic */
+    .wizard-section {
+        min-height: 100vh;
+        background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
+        color: #ffffff;
+        padding: 60px 20px;
+        font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    .wizard-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .wizard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .back-link {
+        color: #94a3b8;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: color 0.2s ease;
+    }
+
+    .back-link:hover {
+        color: #60a5fa;
+    }
+
+    .step-indicator {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        color: #cbd5e1;
+    }
+
+    .wizard-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 48px;
+        backdrop-filter: blur(16px);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .wizard-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin: 0 0 12px 0;
+        background: linear-gradient(to right, #ffffff, #93c5fd);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .wizard-sub {
+        color: #94a3b8;
+        margin: 0 0 40px 0;
+        font-size: 1.05rem;
+        line-height: 1.5;
+    }
+
+    .custom-form {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 20px;
+    }
+
+    .half {
+        flex: 1;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+    }
+
+    input, select {
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 16px;
+        color: #ffffff;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    input::placeholder {
+        color: #475569;
+    }
+
+    input:focus, select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        background: rgba(0, 0, 0, 0.4);
+    }
+
+    select option {
+        background: #0f172a;
+        color: #ffffff;
+    }
+
+    .input-wrapper {
+        position: relative;
+        display: flex;
+    }
+
+    .input-wrapper input {
+        width: 100%;
+        padding-right: 60px;
+    }
+
+    .scan-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 1.1rem;
+    }
+
+    .scan-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: #3b82f6;
+    }
+
+    .submit-btn {
+        margin-top: 20px;
+        width: 100%;
+        padding: 18px;
+        font-size: 1.1rem;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.1s ease, box-shadow 0.2s ease;
+        box-shadow: 0 10px 20px -10px rgba(37, 99, 235, 0.5);
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 25px -10px rgba(37, 99, 235, 0.7);
+    }
+
+    @media (max-width: 600px) {
+        .form-row {
+            flex-direction: column;
+            gap: 24px;
+        }
+        .wizard-card {
+            padding: 30px 20px;
+        }
+        .wizard-section {
+            padding: 30px 15px;
+        }
+    }
+</style>
