@@ -24,7 +24,7 @@
         if (jobId) {
             try {
                 // 2. Fetch the exact job details from the FastAPI database
-                const response = await fetch(`http://127.0.0.1:8000/api/jobs/${jobId}`);
+                const response = await fetch(`https://shutup-forwarder-production.up.railway.app/api/jobs/${jobId}`);
                 
                 if (response.ok) {
                     const result = await response.json();

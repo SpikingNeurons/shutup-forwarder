@@ -99,7 +99,7 @@
 
         isCompleting = true;
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/jobs/${activeJob.id}/complete`, {
+            const response = await fetch(`https://shutup-forwarder-production.up.railway.app/api/jobs/${activeJob.id}/complete`, {
                 method: 'PATCH'
             });
 

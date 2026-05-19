@@ -25,9 +25,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="ShutUP Forwarder API", lifespan=lifespan)
 
 # CORS configurations
+origins = [
+    "http://localhost:5173", # Keep this just in case you ever want to test locally!
+    "https://your-new-app-name.vercel.app", # The URL Vercel gives you
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

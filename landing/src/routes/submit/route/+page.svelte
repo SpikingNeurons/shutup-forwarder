@@ -76,7 +76,7 @@
             console.log("Sending to AI Dispatch:", payload);
 
             // 3. Send to FastAPI backend
-            const response = await fetch('http://127.0.0.1:8000/api/submit-job', {
+            const response = await fetch('https://shutup-forwarder-production.up.railway.app/api/submit-job', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)

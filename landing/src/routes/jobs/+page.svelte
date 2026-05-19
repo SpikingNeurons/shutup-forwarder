@@ -14,7 +14,7 @@
 
     onMount(async () => {
         try {
-            const res = await fetch('http://127.0.0.1:8000/api/jobs');
+            const res = await fetch('https://shutup-forwarder-production.up.railway.app/api/jobs');
             if (res.ok) {
                 const responseData = await res.json();
                 const allJobs = responseData.data || responseData;
@@ -34,7 +34,7 @@
         isFetchingDetails = true;
         selectedJob = null; 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/jobs/${jobId}`);
+            const response = await fetch(`https://shutup-forwarder-production.up.railway.app/api/jobs/${jobId}`);
             const result = await response.json();
             if (result.status === 'success') {
                 selectedJob = result.data;
@@ -52,7 +52,7 @@
         
         isSubmittingBid = true;
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/jobs/${selectedJob.id}/bids`, {
+            const response = await fetch(`https://shutup-forwarder-production.up.railway.app/api/jobs/${selectedJob.id}/bids`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -83,7 +83,7 @@
     async function acceptCounterOffer(bidId: string) {
         isAcceptingDeal = true;
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/jobs/${selectedJob.id}/bids/${bidId}/accept`, {
+            const response = await fetch(`https://shutup-forwarder-production.up.railway.app/api/jobs/${selectedJob.id}/bids/${bidId}/accept`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' }
             });
