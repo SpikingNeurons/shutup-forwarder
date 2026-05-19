@@ -2,9 +2,15 @@
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
 
+    // Existing state
     let availableJobs = $state<any[]>([]);
     let isLoading = $state(true);
-    let processingJobId = $state<string | null>(null);
+    
+    // New Bidding State
+    let selectedJob = $state<any>(null);
+    let isFetchingDetails = $state(false);
+    let bidAmount = $state<number | ''>('');
+    let isSubmittingBid = $state(false);
 
     onMount(async () => {
         try {
@@ -13,8 +19,7 @@
                 const responseData = await res.json();
                 const allJobs = responseData.data || responseData;
                 
-                // FILTER APPLIED: Now it ONLY grabs jobs that are fresh and unclaimed.
-                // Anything marked "Pending Pickup", "In Transit", or "Completed" is hidden.
+                // FILTER APPLIED: Only grabs fresh jobs
                 availableJobs = allJobs.filter((job: any) => job.status === 'Reviewing');
             }
         } catch (error) {
@@ -24,29 +29,81 @@
         }
     });
 
-    async function acceptJob(job: any) {
-        processingJobId = job.id;
-
+    // 1. Fetch job details and open the sidebar
+    async function openBiddingStation(jobId: string) {
+        isFetchingDetails = true;
+        selectedJob = null; 
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/jobs/${job.id}/accept`, {
+            const response = await fetch(`http://127.0.0.1:8000/api/jobs/${jobId}`);
+            const result = await response.json();
+            if (result.status === 'success') {
+                selectedJob = result.data;
+            }
+        } catch (error) {
+            console.error("Error fetching job details:", error);
+        } finally {
+            isFetchingDetails = false;
+        }
+    }
+
+    // 2. Submit the driver's bid
+    async function submitBid() {
+        if (!bidAmount || bidAmount <= 0) return alert("Please enter a valid amount!");
+        
+        isSubmittingBid = true;
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/jobs/${selectedJob.id}/bids`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    driverName: "Test Driver", // Hardcoded until Auth is added
+                    amount: bidAmount
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                // Svelte 5 reactivity: Create a new array to trigger UI update
+                selectedJob.bids = [...(selectedJob.bids || []), result.data]; 
+                bidAmount = ''; // Clear input
+            } else {
+                alert("Failed to submit bid.");
+            }
+        } catch (error) {
+            console.error("Error submitting bid:", error);
+            alert("Network error while submitting bid.");
+        } finally {
+            isSubmittingBid = false;
+        }
+    }
+
+    let isAcceptingDeal = $state(false);
+
+    async function acceptCounterOffer(bidId: string) {
+        isAcceptingDeal = true;
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/jobs/${selectedJob.id}/bids/${bidId}/accept`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' }
             });
-
-            if (res.ok) {
-                // 1. Save the specific job data to the browser memory!
-                localStorage.setItem('activeTransitJob', JSON.stringify(job));
+            
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                // 1. Save the job to memory so the active dashboard knows what to load
+                localStorage.setItem('activeTransitJob', JSON.stringify(selectedJob));
                 
-                // 2. Remove from board and redirect
-                availableJobs = availableJobs.filter(j => j.id !== job.id);
+                // 2. Teleport the driver to their active jobs dashboard!
                 goto('/jobs/active');
             } else {
-                alert("Error: Job could not be claimed.");
+                alert("Failed to accept the deal.");
             }
         } catch (error) {
+            console.error("Error accepting deal:", error);
             alert("Network error.");
         } finally {
-            processingJobId = null;
+            isAcceptingDeal = false;
         }
     }
 </script>
@@ -55,65 +112,145 @@
     <header class="marketplace-header">
         <div>
             <h1>Available Loads</h1>
-            <p class="subtitle">Select a job to view details and accept.</p>
+            <p class="subtitle">Select a job to view details and negotiate your rate.</p>
         </div>
         <div class="header-actions">
             <a href="/" class="btn-outline">Exit Marketplace</a>
         </div>
     </header>
 
-    <div class="jobs-grid">
-        {#each availableJobs as job}
-            <div class="job-card">
-                <div class="card-header">
-                    <span class="payout">{job.payout ? `€${job.payout.replace('₹', '')}` : '€500'}</span>
-                    <span class="distance">{job.distance || 'Route Calc Pending'}</span>
-                </div>
-                
-                <div class="route-info">
-                    <div class="location">
-                        <span class="dot pickup-dot"></span>
-                        <div class="text-group">
-                            <span class="label">PICKUP</span>
-                            <span class="city">{job.pickup || job.pickupAddress || 'Unknown Pickup'}</span>
+    <div class="main-content-split">
+        <div class="jobs-grid">
+            {#each availableJobs as job}
+                <div class="job-card" class:active-card={selectedJob?.id === job.id}>
+                    <div class="card-header">
+                        <span class="payout">{job.payout ? `€${job.payout.replace('₹', '')}` : '€500'}</span>
+                        <span class="distance">{job.distance || 'Route Calc Pending'}</span>
+                    </div>
+                    
+                    <div class="route-info">
+                        <div class="location">
+                            <span class="dot pickup-dot"></span>
+                            <div class="text-group">
+                                <span class="label">PICKUP</span>
+                                <span class="city">{job.pickup || job.pickupAddress || 'Unknown Pickup'}</span>
+                            </div>
+                        </div>
+                        <div class="route-line"></div>
+                        <div class="location">
+                            <span class="dot delivery-dot"></span>
+                            <div class="text-group">
+                                <span class="label">DELIVERY</span>
+                                <span class="city">{job.delivery || job.deliveryAddress || 'Unknown Delivery'}</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="route-line"></div>
-                    <div class="location">
-                        <span class="dot delivery-dot"></span>
-                        <div class="text-group">
-                            <span class="label">DELIVERY</span>
-                            <span class="city">{job.delivery || job.deliveryAddress || 'Unknown Delivery'}</span>
+
+                    <div class="vehicle-info">
+                        <strong>Vehicle:</strong> {job.make || job.vehicleMake || ''} {job.model || job.vehicleModel || 'Unknown Vehicle'}
+                    </div>
+                    
+                    <div class="ai-insight">
+                        <span class="ai-icon">🤖</span>
+                        <span class="ai-text">
+                            {job.ai_analysis || job.aiAnalysis || job.aiReasoning || 'AI Cleared: Route and vehicle details validated.'}
+                        </span>
+                    </div>
+
+                    <button 
+                        class="btn-accept" 
+                        class:loading={isFetchingDetails && selectedJob?.id === job.id}
+                        onclick={() => openBiddingStation(job.id)}
+                    >
+                        View & Bid
+                    </button>
+                </div>
+            {/each}
+
+            {#if availableJobs.length === 0 && !isLoading}
+                <div class="empty-state">No jobs available right now. Check back later!</div>
+            {/if}
+        </div>
+
+        <div class="sidebar-wrapper">
+            {#if selectedJob}
+                <div class="bidding-sidebar">
+                    <div class="sidebar-header">
+                        <h2 class="sidebar-title">{selectedJob.make} {selectedJob.model}</h2>
+                        <p class="sidebar-subtitle">Tracking: {selectedJob.trackingNumber}</p>
+                    </div>
+                    
+                    <div class="sidebar-content">
+                        <h3 class="bids-title">Live Negotiations</h3>
+                        
+                        <div class="bids-list">
+                            {#if selectedJob.bids && selectedJob.bids.length > 0}
+                                {#each selectedJob.bids as bid}
+                                    <div class="bid-item">
+                                        <div class="bid-header">
+                                            <span class="bid-driver">{bid.driverName}</span>
+                                            <div class="bid-details">
+                                                <span class="bid-amount" class:text-red-500={bid.status === 'REJECTED'} class:text-green-500={bid.status === 'ACCEPTED'}>
+                                                    €{bid.amount}
+                                                </span>
+                                                <span class="bid-status">{bid.status.replace(/_/g, ' ')}</span>
+                                            </div>
+                                        </div>
+
+                                        {#if bid.status === 'COUNTER_OFFERED' && bid.aiCounterAmount}
+                                            <div class="action-box counter-box">
+                                                <div class="box-text">
+                                                    <span class="box-label">AI Counter Offer</span>
+                                                    <span class="box-value">€{bid.aiCounterAmount}</span>
+                                                </div>
+                                                <button class="btn-accept sidebar-btn" disabled={isAcceptingDeal} onclick={() => acceptCounterOffer(bid.id)}>
+                                                    {isAcceptingDeal ? '...' : 'Accept'}
+                                                </button>
+                                            </div>
+                                        
+                                        {:else if bid.status === 'ACCEPTED'}
+                                            <div class="action-box success-box">
+                                                <div class="box-text">
+                                                    <span class="box-label text-emerald-500">Offer Accepted!</span>
+                                                    <span class="box-subtext">You won this load.</span>
+                                                </div>
+                                                <button class="btn-success sidebar-btn" disabled={isAcceptingDeal} onclick={() => acceptCounterOffer(bid.id)}>
+                                                    {isAcceptingDeal ? '...' : 'Proceed to Load'}
+                                                </button>
+                                            </div>
+                                        {/if}
+                                    </div>
+                                {/each}
+                            {:else}
+                                <p class="empty-bids">No bids yet. Start the negotiation!</p>
+                            {/if}
+                        </div>
+
+                        <div class="bid-input-group">
+                            <input 
+                                type="number" 
+                                bind:value={bidAmount} 
+                                placeholder="Offer €..." 
+                                class="bid-input"
+                            />
+                            <button 
+                                class="btn-accept submit-btn" 
+                                disabled={isSubmittingBid}
+                                onclick={submitBid}
+                            >
+                                {isSubmittingBid ? '...' : 'Submit'}
+                            </button>
                         </div>
                     </div>
                 </div>
-
-                <div class="vehicle-info">
-                    <strong>Vehicle:</strong> {job.make || job.vehicleMake || ''} {job.model || job.vehicleModel || 'Unknown Vehicle'}
+            {:else}
+                <div class="empty-sidebar">
+                    <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                    <p class="empty-title">Select a Load</p>
+                    <p class="empty-subtitle">Click "View & Bid" to open the negotiation terminal.</p>
                 </div>
-                
-                <div class="ai-insight">
-                    <span class="ai-icon">🤖</span>
-                    <span class="ai-text">
-                        {job.ai_analysis || job.aiAnalysis || job.aiReasoning || 'AI Cleared: Route and vehicle details validated.'}
-                    </span>
-                </div>
-
-                <button 
-                    class="btn-accept" 
-                    class:loading={processingJobId === job.id}
-                    disabled={processingJobId !== null}
-                    onclick={() => acceptJob(job)}
-                >
-                    {#if processingJobId === job.id} Assigning to you...
-                    {:else} Accept Job {/if}
-                </button>
-            </div>
-        {/each}
-
-        {#if availableJobs.length === 0 && !isLoading}
-            <div class="empty-state">No jobs available right now. Check back later!</div>
-        {/if}
+            {/if}
+        </div>
     </div>
 </div>
 
@@ -125,17 +262,13 @@
         min-height: 100vh; 
         color: #f8fafc; 
         font-family: 'Inter', system-ui, sans-serif; 
-        max-width: 1200px;
+        max-width: 1480px; /* Widened to fit the new sidebar */
         margin: 0 auto;
     }
 
     .marketplace-header { 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        margin-bottom: 40px; 
-        flex-wrap: wrap;
-        gap: 20px;
+        display: flex; justify-content: space-between; align-items: center; 
+        margin-bottom: 40px; flex-wrap: wrap; gap: 20px;
     }
     .marketplace-header h1 { margin: 0; font-size: 2rem; font-weight: 700; color: #ffffff; }
     .subtitle { margin: 4px 0 0 0; color: #94a3b8; font-size: 0.95rem; }
@@ -147,41 +280,32 @@
     }
     .btn-outline:hover { background: #1e293b; color: #f8fafc; }
 
-    /* Grid Layout */
+    /* SPLIT VIEW LAYOUT (WIDENED SIDEBAR) */
+    .main-content-split {
+        display: grid;
+        grid-template-columns: 1fr 480px; /* WIDENED FROM 400 TO 480 */
+        gap: 48px; /* WIDER GAP */
+        align-items: start;
+    }
+
     .jobs-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: 24px;
     }
 
-    /* Card Styling */
     .job-card {
-        background: #1e293b;
-        border: 1px solid #334155;
-        border-radius: 16px;
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        transition: transform 0.2s, box-shadow 0.2s;
+        background: #1e293b; border: 1px solid #334155; border-radius: 16px;
+        padding: 24px; display: flex; flex-direction: column;
+        transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
     }
-    .job-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(0,0,0,0.2);
-        border-color: #475569;
-    }
+    .job-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.2); border-color: #475569; }
+    .active-card { border-color: #3b82f6; box-shadow: 0 0 0 1px #3b82f6; } 
 
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-        padding-bottom: 16px;
-        border-bottom: 1px solid #334155;
-    }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #334155; }
     .payout { font-size: 1.5rem; font-weight: 800; color: #10b981; }
     .distance { font-size: 0.85rem; font-weight: 600; color: #94a3b8; background: #0f172a; padding: 4px 10px; border-radius: 12px; }
 
-    /* Route Visualization */
     .route-info { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; position: relative; }
     .location { display: flex; align-items: flex-start; gap: 12px; z-index: 2; }
     .dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 4px; border: 2px solid #0f172a; box-shadow: 0 0 0 2px currentColor; }
@@ -192,55 +316,124 @@
     .label { font-size: 0.7rem; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }
     .city { font-size: 1rem; font-weight: 600; color: #f1f5f9; }
 
-    .route-line {
-        position: absolute;
-        left: 5px;
-        top: 20px;
-        bottom: 20px;
-        width: 2px;
-        background: dashed 2px #334155;
-        z-index: 1;
-    }
+    .route-line { position: absolute; left: 5px; top: 20px; bottom: 20px; width: 2px; background: dashed 2px #334155; z-index: 1; }
 
-    /* Details */
     .vehicle-info { font-size: 0.95rem; color: #cbd5e1; margin-bottom: 16px; }
     
     .ai-insight {
-        background: rgba(56, 189, 248, 0.05);
-        border: 1px solid rgba(56, 189, 248, 0.1);
-        border-radius: 8px;
-        padding: 12px;
-        display: flex;
-        gap: 10px;
-        align-items: flex-start;
-        margin-bottom: 24px;
-        margin-top: auto; /* Pushes button to bottom */
+        background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.1);
+        border-radius: 8px; padding: 12px; display: flex; gap: 10px; align-items: flex-start;
+        margin-bottom: 24px; margin-top: auto; 
     }
     .ai-icon { font-size: 1.2rem; }
     .ai-text { font-size: 0.85rem; color: #7dd3fc; line-height: 1.4; }
 
-    /* Button */
     .btn-accept {
-        width: 100%;
-        padding: 14px;
-        border: none;
-        border-radius: 8px;
-        background: #3b82f6;
-        color: white;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
+        width: 100%; padding: 14px; border: none; border-radius: 8px;
+        background: #3b82f6; color: white; font-size: 1rem; font-weight: 600;
+        cursor: pointer; transition: all 0.2s;
     }
     .btn-accept:hover:not(:disabled) { background: #2563eb; }
     .btn-accept:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; }
     .btn-accept.loading { animation: pulse 1.5s infinite; }
+    .sidebar-btn { width: auto; padding: 10px 20px; font-size: 0.9rem; border-radius: 8px; }
 
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.7; }
-        100% { opacity: 1; }
-    }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
     .empty-state { grid-column: 1 / -1; text-align: center; padding: 60px; color: #64748b; font-size: 1.1rem; }
+
+    /* --- RIGHT SIDEBAR: BIDDING STATION --- */
+    .sidebar-wrapper { position: sticky; top: 40px; }
+
+    .bidding-sidebar {
+        background: #1e293b; border: 1px solid #334155; border-radius: 16px;
+        overflow: hidden; display: flex; flex-direction: column;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .sidebar-header { 
+        background: #0f172a; 
+        padding: 32px; /* INCREASED PADDING */
+        border-bottom: 1px solid #334155; 
+    }
+    .sidebar-title { margin: 0; font-size: 1.25rem; font-weight: 700; color: #f8fafc; }
+    .sidebar-subtitle { margin: 4px 0 0 0; font-size: 0.85rem; color: #94a3b8; font-family: monospace;}
+
+    .sidebar-content { padding: 32px; /* INCREASED PADDING */ }
+    .bids-title { margin: 0 0 16px 0; font-size: 0.95rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px;}
+    
+    /* UPGRADED BIDDING UI */
+    .bids-list {
+        max-height: 400px; overflow-y: auto; display: flex; flex-direction: column;
+        gap: 16px; margin-bottom: 32px; padding-right: 12px;
+    }
+
+    .bids-list::-webkit-scrollbar { width: 6px; }
+    .bids-list::-webkit-scrollbar-track { background: #0f172a; border-radius: 4px;}
+    .bids-list::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+    .bid-item {
+        background: #151e32; border: 1px solid #334155; 
+        padding: 24px; /* INCREASED PADDING */
+        border-radius: 16px; display: flex; flex-direction: column;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .bid-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+    .bid-driver { color: #f1f5f9; font-weight: 600; font-size: 1rem; }
+    .bid-details { text-align: right; }
+    .bid-amount { display: block; color: #f8fafc; font-weight: 800; font-size: 1.25rem; }
+    .bid-status { display: block; font-size: 0.65rem; font-weight: 700; color: #64748b; margin-top: 4px; letter-spacing: 0.5px;}
+
+    .text-red-500 { color: #ef4444 !important; }
+    .text-green-500 { color: #10b981 !important; }
+    .text-emerald-500 { color: #10b981 !important; }
+
+    /* Action Boxes (Counter Offer & Success) */
+    .action-box {
+        margin-top: 16px; padding: 16px; border-radius: 12px;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .counter-box { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); }
+    .success-box { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); }
+
+    .box-text { display: flex; flex-direction: column; }
+    .box-label { font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .box-value { font-size: 1.25rem; font-weight: 800; color: #3b82f6; margin-top: 2px; }
+    .box-subtext { font-size: 0.9rem; font-weight: 600; color: #10b981; margin-top: 2px; }
+
+    .btn-success { background: #10b981; color: white; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-success:hover:not(:disabled) { background: #059669; }
+
+    .empty-bids { color: #64748b; font-size: 0.95rem; font-style: italic; text-align: center; padding: 30px 0; }
+
+    .bid-input-group { 
+        border-top: 1px solid #334155; 
+        padding-top: 32px; /* INCREASED PADDING */
+        margin-top: 16px; /* PUSHES AWAY FROM BIDS */
+        display: flex; gap: 16px; 
+    }
+    
+    .bid-input {
+        flex: 1; background: #0f172a; border: 1px solid #334155; color: white;
+        padding: 16px 20px; /* TALLER INPUT */
+        border-radius: 12px; font-size: 1.1rem;
+        font-weight: 600; transition: border-color 0.2s;
+    }
+    .bid-input:focus { outline: none; border-color: #3b82f6; }
+    .bid-input::placeholder { color: #475569; font-weight: 400; }
+    .submit-btn { padding: 16px 28px; border-radius: 12px; width: auto; } /* BIGGER BUTTON */
+
+    .empty-sidebar {
+        background: #1e293b; border: 2px dashed #334155; border-radius: 16px;
+        padding: 80px 30px; text-align: center; color: #64748b;
+    }
+    .empty-icon { width: 64px; height: 64px; margin: 0 auto 16px auto; color: #334155; }
+    .empty-title { font-size: 1.25rem; font-weight: 700; color: #94a3b8; margin: 0 0 8px 0; }
+    .empty-subtitle { font-size: 0.95rem; line-height: 1.5; margin: 0; }
+
+    @media (max-width: 1024px) {
+        .main-content-split { grid-template-columns: 1fr; }
+        .sidebar-wrapper { position: static; margin-top: 24px; }
+    }
 </style>

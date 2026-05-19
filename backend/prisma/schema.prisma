@@ -26,8 +26,11 @@ model User {
   createdAt DateTime @default(now())
 
   // Relations: A user can be a customer who creates jobs, or a forwarder who drives them
-  jobsCreated   Job[] @relation("CustomerJobs")
-  jobsAccepted  Job[] @relation("ForwarderJobs")
+  jobsCreated  Job[] @relation("CustomerJobs")
+  jobsAccepted Job[] @relation("ForwarderJobs")
+  
+  // NEW: A forwarder can make many bids
+  bids         Bid[] @relation("ForwarderBids")
 }
 
 model Job {
@@ -58,8 +61,36 @@ model Job {
   aiReasoning    String
   aiComplexity   String
 
+  // NEW: Budget for AI Negotiation
+  targetPrice    Float?   // The budget Intake AI calculates
+
   // System State
   status         String   @default("Reviewing") 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  // NEW: Relations
+  bids           Bid[]    // Links the Job to all its negotiations
+}
+
+// 4. NEW: The Negotiation Table (Bids)
+model Bid {
+  id              String   @id @default(cuid())
+  
+  // Link to the Job
+  jobId           String
+  job             Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  // Link to the Forwarder (Driver) making the bid
+  forwarderId     String?
+  forwarder       User?    @relation("ForwarderBids", fields: [forwarderId], references: [id])
+  driverName      String   // Keeping this for fallback/simplicity if auth isn't fully wired yet
+  
+  // The Money
+  amount          Float    // The driver's initial offer
+  aiCounterAmount Float?   // What the AI counters with (if it haggles)
+  
+  // The State of the Negotiation
+  status          String   @default("PENDING_AI_REVIEW") 
+  createdAt       DateTime @default(now())
 }

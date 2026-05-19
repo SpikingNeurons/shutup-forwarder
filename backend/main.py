@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from agent import evaluate_job
 from prisma import Prisma  # Clean, standard import
+from ai_broker import evaluate_driver_bid # <-- NEW: Importing our AI Brain
 
 # 1. Initialize our Prisma client instance globally
 db = Prisma()
@@ -36,6 +37,11 @@ class JobSubmission(BaseModel):
     vehicle: Dict[str, Any]
     photos: Dict[str, Any]
     route: Dict[str, Any]
+
+class BidSubmission(BaseModel):
+    driverName: str
+    amount: float
+    forwarderId: str | None = None
 
 
 # --- API ENDPOINTS ---
@@ -118,14 +124,15 @@ async def get_single_job(job_id: str):
     job = await db.job.find_unique(
         where={
             "id": job_id
+        },
+        include={
+            "bids": True  
         }
     )
     
     if not job:
-        print("Job not found!")
         raise HTTPException(status_code=404, detail="Job not found")
         
-    print("Successfully found the job!")
     return {
         "status": "success",
         "data": job
@@ -175,3 +182,73 @@ async def complete_job(job_id: str):
         return {"message": "Job marked as completed", "data": updated_job}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to complete job: {str(e)}")
+    
+@app.post("/api/jobs/{job_id}/bids")
+async def submit_bid(job_id: str, submission: BidSubmission):
+    print(f"Received new bid of €{submission.amount} for Job {job_id} from {submission.driverName}")
+    
+    # 1. Verify the job actually exists first
+    job = await db.job.find_unique(where={"id": job_id})
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    # 2. Save the initial bid to the database
+    new_bid = await db.bid.create(
+        data={
+            "jobId": job_id,
+            "driverName": submission.driverName,
+            "amount": submission.amount,
+            "forwarderId": submission.forwarderId,
+            "status": "PENDING_AI_REVIEW"
+        }
+    )
+    
+    # 3. 🧠 WAKE UP THE AI BROKER
+    ai_result = await evaluate_driver_bid(
+        make=job.make, 
+        model=job.model, 
+        target_price=job.targetPrice, 
+        driver_amount=submission.amount
+    )
+    
+    # 4. Update the bid in the database with the AI's final decision
+    updated_bid = await db.bid.update(
+        where={"id": new_bid.id},
+        data={
+            "status": ai_result["decision"],
+            "aiCounterAmount": ai_result.get("counter_amount")
+        }
+    )
+    
+    print(f"Negotiation round complete. Status: {updated_bid.status}")
+    return {
+        "status": "success",
+        "message": "Bid processed by AI",
+        "data": updated_bid
+    }
+
+@app.patch("/api/jobs/{job_id}/bids/{bid_id}/accept")
+async def accept_counter_offer(job_id: str, bid_id: str):
+    try:
+        # 1. Mark this specific bid as the winning deal
+        await db.bid.update(
+            where={"id": bid_id},
+            data={"status": "ACCEPTED"}
+        )
+        
+        # 2. Lock the entire job and mark it for pickup
+        updated_job = await db.job.update(
+            where={"id": job_id},
+            data={"status": "Pending Pickup"}
+        )
+        
+        print(f"Deal locked in! Job {job_id} is now Pending Pickup.")
+        
+        return {
+            "status": "success", 
+            "message": "Counter offer accepted!", 
+            "job": updated_job
+        }
+    except Exception as e:
+        print(f"Error accepting counter offer: {e}")
+        raise HTTPException(status_code=500, detail="Failed to accept offer")
