@@ -26,9 +26,9 @@ app = FastAPI(title="ShutUP Forwarder API", lifespan=lifespan)
 
 # CORS configurations
 origins = [
-    "http://localhost:5173", # Keep this for local testing
-    "https://landing-seven-psi-71.vercel.app", # Your clean Vercel URL
-    "https://landing-3c4plnskd-fahads-projects-4ecec35f.vercel.app" # Your direct Vercel build URL (just to be safe!)
+    "http://localhost:5173",                      # Local UI testing
+    "https://shutup-app-final.vercel.app",        # Your clean permanent frontend URL
+    "https://shutup-app-final-f2u51ffr0-fahads-projects-4ecec35f.vercel.app" # Direct deployment URL
 ]
 
 app.add_middleware(
