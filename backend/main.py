@@ -109,17 +109,35 @@ async def submit_job(submission: JobSubmission):
 async def get_all_jobs():
     print("Fetching all jobs from the database...")
     
-    jobs = await db.job.find_many(
+    # 1. Fetch raw jobs from Prisma
+    raw_jobs = await db.job.find_many(
         order={
             "createdAt": "desc"
         }
     )
     
-    print(f"Successfully retrieved {len(jobs)} jobs!")
+    # 2. Filter out duplicates cleanly
+    seen_identifiers = set()
+    unique_jobs = []
+    
+    for job in raw_jobs:
+        # PRISMA FIX: Using dot notation instead of .get()
+        footprint = (
+            job.pickup, 
+            job.delivery, 
+            job.model
+        )
+        
+        if footprint not in seen_identifiers:
+            seen_identifiers.add(footprint)
+            unique_jobs.append(job)
+            
+    print(f"Successfully filtered! Serving {len(unique_jobs)} unique jobs out of {len(raw_jobs)} total records.")
+    
     return {
         "status": "success",
-        "count": len(jobs),
-        "data": jobs
+        "count": len(unique_jobs),
+        "data": unique_jobs
     }
 
 
