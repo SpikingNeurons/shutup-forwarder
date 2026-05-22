@@ -11,16 +11,13 @@
         odometer: ''
     });
 
-    // We keep these for the UI, but we won't hardcode the AI note anymore
     let isScanning = $state(false);
     let aiNote = $state('Mock Mode: Image evaluation bypassed.');
 
-    // DUMMY UPLOAD FUNCTION - No file reading, no Base64 processing!
+    // DUMMY UPLOAD FUNCTION
     function handleDummyUpload(part: keyof typeof photos) {
-        // We instantly set a fake string so the UI knows it's "done"
         photos[part] = 'mock_image_data';
 
-        // Show a brief scanning animation just for UI feel
         if (part === 'front') {
             isScanning = true;
             setTimeout(() => {
@@ -29,7 +26,6 @@
         }
     }
 
-    // Check if all photos have our dummy string
     let allDone = $derived(Object.values(photos).every(data => data !== ''));
 
     function handleNext() {
@@ -38,8 +34,6 @@
             return;
         }
         
-        // NOW we are saving tiny mock strings to sessionStorage! 
-        // This will pass cleanly to your backend without crashing the token limit.
         sessionStorage.setItem('shutup-step2-photos', JSON.stringify({ 
             completed: true, 
             images: photos 
@@ -148,48 +142,126 @@
 </section>
 
 <style>
-    /* Base styles */
-    .wizard-section { min-height: 100vh; background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%); color: #ffffff; padding: 60px 20px; font-family: 'Inter', system-ui, sans-serif; }
-    .wizard-container { max-width: 600px; margin: 0 auto; }
-    .wizard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-    .back-link { color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.95rem; }
-    .back-link:hover { color: #60a5fa; }
-    .step-indicator { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; }
+    /* Premium Light Theme Styles */
+    .wizard-section { 
+        min-height: 100vh; 
+        background: #f8fafc; /* slate-50 */
+        color: #0f172a;      /* slate-900 */
+        padding: 60px 20px; 
+        font-family: 'Inter', system-ui, sans-serif; 
+    }
     
-    .wizard-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 48px; backdrop-filter: blur(16px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-    .wizard-title { font-size: 2.2rem; font-weight: 700; margin: 0 0 12px 0; background: linear-gradient(to right, #ffffff, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .wizard-sub { color: #94a3b8; margin: 0 0 40px 0; font-size: 1.05rem; line-height: 1.5; }
+    .wizard-container { max-width: 600px; margin: 0 auto; }
+    
+    .wizard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .back-link { color: #64748b; text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+    .back-link:hover { color: #2563eb; }
+    
+    .step-indicator { 
+        background: #ffffff; 
+        border: 1px solid #cbd5e1; /* Darkened */
+        padding: 6px 14px; 
+        border-radius: 20px; 
+        font-size: 0.85rem; 
+        font-weight: 700; 
+        color: #475569; 
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
+    }
+    
+    .wizard-card { 
+        background: #ffffff; 
+        border: 1px solid #cbd5e1; /* Darkened from e2e8f0 */
+        border-radius: 24px; 
+        padding: 48px; 
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); 
+    }
+    
+    .wizard-title { 
+        font-size: 2.2rem; 
+        font-weight: 800; 
+        margin: 0 0 12px 0; 
+        color: #0f172a; 
+        letter-spacing: -0.025em; 
+    }
+    
+    .wizard-sub { color: #64748b; margin: 0 0 40px 0; font-size: 1.05rem; line-height: 1.5; }
 
     .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
 
     .photo-slot {
-        background: rgba(0, 0, 0, 0.25); border: 1px dashed rgba(255, 255, 255, 0.2); border-radius: 12px;
-        padding: 24px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; transition: all 0.3s ease;
+        background: #f8fafc; 
+        border: 2px dashed #94a3b8; /* Darkened from cbd5e1 for better visibility */
+        border-radius: 12px;
+        padding: 24px 16px; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+        gap: 12px; 
+        transition: all 0.3s ease;
     }
-    .photo-slot.completed { border-style: solid; border-color: #4ade80; background: rgba(74, 222, 128, 0.05); padding: 12px; }
+    .photo-slot.completed { 
+        border-style: solid; 
+        border-color: #22c55e; 
+        background: #f0fdf4; 
+        padding: 12px; 
+    }
 
-    .slot-label { font-size: 0.85rem; font-weight: 600; letter-spacing: 1px; color: #94a3b8; }
+    .slot-label { font-size: 0.85rem; font-weight: 700; letter-spacing: 1px; color: #475569; } /* Darkened text slightly */
 
     .upload-btn {
-        display: inline-block; background: rgba(255, 255, 255, 0.1); border: none; color: white;
-        padding: 8px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: background 0.2s ease; text-align: center;
+        display: inline-block; 
+        background: #ffffff; 
+        border: 1px solid #94a3b8; /* Darkened */
+        color: #334155;
+        padding: 8px 16px; 
+        border-radius: 8px; 
+        font-size: 0.9rem; 
+        font-weight: 600; 
+        cursor: pointer; 
+        transition: all 0.2s ease; 
+        text-align: center; 
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
-    .upload-btn:hover { background: rgba(59, 130, 246, 0.5); }
-    .status-done { color: #4ade80; font-weight: 600; font-size: 0.9rem; margin-top: 4px; text-align: center; }
+    .upload-btn:hover { 
+        background: #f0f9ff; 
+        border-color: #0284c7; 
+        color: #0284c7; 
+    }
+    
+    .status-done { color: #16a34a; font-weight: 700; font-size: 0.9rem; margin-top: 4px; text-align: center; }
 
     .ai-box { opacity: 0; height: 0; overflow: hidden; transition: all 0.4s ease; margin-bottom: 24px; border-radius: 12px; }
-    .ai-box.visible { opacity: 1; height: auto; padding: 16px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); }
-    .scanning-text { color: #fbbf24; font-weight: 500; animation: pulse 1.5s infinite; text-align: center;}
-    .ai-alert { color: #fcd34d; font-weight: 500; line-height: 1.4; }
+    .ai-box.visible { opacity: 1; height: auto; padding: 16px; background: #fffbeb; border: 1px solid #fde68a; }
+    .scanning-text { color: #d97706; font-weight: 600; animation: pulse 1.5s infinite; text-align: center;}
+    .ai-alert { color: #b45309; font-weight: 500; line-height: 1.4; }
 
     @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
     .submit-btn {
-        width: 100%; padding: 18px; font-size: 1.1rem; border-radius: 12px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        color: white; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+        width: 100%; 
+        padding: 18px; 
+        font-size: 1.1rem; 
+        border-radius: 12px; 
+        background: #2563eb;
+        color: white; 
+        border: none; 
+        font-weight: 600; 
+        cursor: pointer; 
+        transition: all 0.2s ease;
     }
-    .submit-btn:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
-    .submit-btn:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px rgba(37, 99, 235, 0.5); }
+    .submit-btn:disabled { 
+        background: #f1f5f9; 
+        color: #94a3b8; 
+        border: 1px solid #cbd5e1; 
+        cursor: not-allowed; 
+        box-shadow: none; 
+    }
+    .submit-btn:not(:disabled):hover { 
+        background: #1d4ed8; 
+        transform: translateY(-2px); 
+        box-shadow: 0 10px 20px -10px rgba(37, 99, 235, 0.5); 
+    }
 
     @media (max-width: 600px) {
         .wizard-card { padding: 30px 20px; }

@@ -194,28 +194,76 @@
 </section>
 
 <style>
-    /* Base styles from previous steps */
-    .wizard-section { min-height: 100vh; background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%); color: #ffffff; padding: 60px 20px; font-family: 'Inter', system-ui, sans-serif; }
-    .wizard-container { max-width: 600px; margin: 0 auto; }
-    .wizard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-    .back-link { color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.95rem; }
-    .back-link:hover { color: #60a5fa; }
-    .step-indicator { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; }
+    /* Premium Light Theme Styles */
+    .wizard-section { 
+        min-height: 100vh; 
+        background: #f8fafc; /* slate-50 */
+        color: #0f172a;      /* slate-900 */
+        padding: 60px 20px; 
+        font-family: 'Inter', system-ui, sans-serif; 
+    }
     
-    .wizard-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 48px; backdrop-filter: blur(16px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-    .wizard-title { font-size: 2.2rem; font-weight: 700; margin: 0 0 12px 0; background: linear-gradient(to right, #ffffff, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .wizard-sub { color: #94a3b8; margin: 0 0 40px 0; font-size: 1.05rem; line-height: 1.5; }
+    .wizard-container { max-width: 600px; margin: 0 auto; }
+    
+    .wizard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    
+    .back-link { color: #64748b; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: color 0.2s ease; }
+    .back-link:hover { color: #2563eb; }
+    
+    .step-indicator { 
+        background: #ffffff; 
+        border: 1px solid #cbd5e1; 
+        padding: 6px 14px; 
+        border-radius: 20px; 
+        font-size: 0.85rem; 
+        font-weight: 700; 
+        letter-spacing: 0.5px; 
+        color: #475569; 
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
+    }
+    
+    .wizard-card { 
+        background: #ffffff; 
+        border: 1px solid #cbd5e1; 
+        border-radius: 24px; 
+        padding: 48px; 
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); 
+    }
+    
+    .wizard-title { 
+        font-size: 2.2rem; 
+        font-weight: 800; 
+        margin: 0 0 12px 0; 
+        color: #0f172a; 
+        letter-spacing: -0.025em; 
+    }
+    
+    .wizard-sub { color: #64748b; margin: 0 0 40px 0; font-size: 1.05rem; line-height: 1.5; }
 
     .custom-form { display: flex; flex-direction: column; gap: 24px; }
     .form-group { display: flex; flex-direction: column; gap: 8px; }
     
-    label { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; }
-    input[type="text"], input[type="date"] { background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 16px; color: #ffffff; font-size: 1rem; transition: all 0.2s ease; }
-    input[type="text"]::placeholder { color: #475569; }
-    input[type="text"]:focus, input[type="date"]:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); background: rgba(0, 0, 0, 0.4); }
+    label { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #475569; }
+    
+    input[type="text"], input[type="date"] { 
+        background: #f8fafc; 
+        border: 1px solid #cbd5e1; 
+        border-radius: 12px; 
+        padding: 16px; 
+        color: #0f172a; 
+        font-size: 1rem; 
+        transition: all 0.2s ease; 
+    }
+    input[type="text"]::placeholder { color: #94a3b8; }
+    input[type="text"]:focus, input[type="date"]:focus { 
+        outline: none; 
+        border-color: #3b82f6; 
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); 
+        background: #ffffff; 
+    }
 
-    /* Custom Radio & Checkbox Styling */
-    .divider { border: 0; height: 1px; background: rgba(255, 255, 255, 0.1); margin: 8px 0; }
+    /* Custom Radio & Checkbox Styling - Light Theme */
+    .divider { border: 0; height: 1px; background: #e2e8f0; margin: 8px 0; }
     
     .radio-group, .checkbox-group { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
     
@@ -225,8 +273,8 @@
         gap: 12px;
         cursor: pointer;
         font-size: 1rem;
-        font-weight: 500;
-        color: #e2e8f0;
+        font-weight: 600;
+        color: #334155;
         text-transform: none;
         letter-spacing: normal;
     }
@@ -234,18 +282,20 @@
     .radio-label input, .checkbox-label input { display: none; }
 
     .radio-custom {
-        width: 24px; height: 24px; border: 2px solid #64748b; border-radius: 50%;
+        width: 24px; height: 24px; border: 2px solid #94a3b8; border-radius: 50%;
         display: inline-block; position: relative; transition: all 0.2s ease;
+        background: #ffffff;
     }
-    .radio-label input:checked + .radio-custom { border-color: #3b82f6; }
+    .radio-label input:checked + .radio-custom { border-color: #3b82f6; background: #ffffff; }
     .radio-label input:checked + .radio-custom::after {
         content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         width: 12px; height: 12px; background: #3b82f6; border-radius: 50%;
     }
 
     .checkbox-custom {
-        width: 24px; height: 24px; border: 2px solid #64748b; border-radius: 6px;
+        width: 24px; height: 24px; border: 2px solid #94a3b8; border-radius: 6px;
         display: inline-block; position: relative; transition: all 0.2s ease;
+        background: #ffffff;
     }
     .checkbox-label input:checked + .checkbox-custom { background: #3b82f6; border-color: #3b82f6; }
     .checkbox-label input:checked + .checkbox-custom::after {
@@ -255,12 +305,22 @@
 
     .submit-btn {
         margin-top: 10px; width: 100%; padding: 18px; font-size: 1.1rem; border-radius: 12px;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background: #10b981;
         color: white; border: none; font-weight: 600; cursor: pointer; transition: transform 0.1s ease, box-shadow 0.2s ease;
-        box-shadow: 0 10px 20px -10px rgba(16, 185, 129, 0.5);
+        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2), 0 2px 4px -1px rgba(16, 185, 129, 0.1);
     }
-    .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 25px -10px rgba(16, 185, 129, 0.7); }
-    .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    .submit-btn:hover:not(:disabled) { 
+        background: #059669;
+        transform: translateY(-2px); 
+        box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3), 0 4px 6px -2px rgba(16, 185, 129, 0.15); 
+    }
+    .submit-btn:disabled { 
+        background: #f1f5f9; 
+        color: #94a3b8; 
+        border: 1px solid #cbd5e1; 
+        cursor: not-allowed; 
+        box-shadow: none; 
+    }
 
     @media (max-width: 600px) {
         .wizard-card { padding: 30px 20px; }

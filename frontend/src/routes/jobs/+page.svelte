@@ -211,7 +211,7 @@
                                         {:else if bid.status === 'ACCEPTED'}
                                             <div class="action-box success-box">
                                                 <div class="box-text">
-                                                    <span class="box-label text-emerald-500">Offer Accepted!</span>
+                                                    <span class="box-label text-emerald-600">Offer Accepted!</span>
                                                     <span class="box-subtext">You won this load.</span>
                                                 </div>
                                                 <button class="btn-success sidebar-btn" disabled={isAcceptingDeal} onclick={() => acceptCounterOffer(bid.id)}>
@@ -255,14 +255,14 @@
 </div>
 
 <style>
-    /* Premium Dark Theme for Drivers */
+    /* Premium Light Theme Styles */
     .marketplace-layout { 
         padding: 40px 20px; 
-        background: #0f172a; 
+        background: #f8fafc; /* slate-50 */
         min-height: 100vh; 
-        color: #f8fafc; 
+        color: #0f172a; 
         font-family: 'Inter', system-ui, sans-serif; 
-        max-width: 1480px; /* Widened to fit the new sidebar */
+        max-width: 1480px; 
         margin: 0 auto;
     }
 
@@ -270,21 +270,22 @@
         display: flex; justify-content: space-between; align-items: center; 
         margin-bottom: 40px; flex-wrap: wrap; gap: 20px;
     }
-    .marketplace-header h1 { margin: 0; font-size: 2rem; font-weight: 700; color: #ffffff; }
-    .subtitle { margin: 4px 0 0 0; color: #94a3b8; font-size: 0.95rem; }
+    .marketplace-header h1 { margin: 0; font-size: 2rem; font-weight: 800; color: #0f172a; }
+    .subtitle { margin: 4px 0 0 0; color: #64748b; font-size: 0.95rem; font-weight: 500; }
 
     .btn-outline {
-        background: transparent; color: #94a3b8; text-decoration: none;
-        padding: 8px 16px; border-radius: 8px; font-weight: 500;
-        border: 1px solid #334155; transition: all 0.2s;
+        background: #ffffff; color: #475569; text-decoration: none;
+        padding: 8px 16px; border-radius: 8px; font-weight: 600;
+        border: 1px solid #cbd5e1; transition: all 0.2s;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
-    .btn-outline:hover { background: #1e293b; color: #f8fafc; }
+    .btn-outline:hover { background: #f1f5f9; color: #0f172a; border-color: #94a3b8; }
 
-    /* SPLIT VIEW LAYOUT (WIDENED SIDEBAR) */
+    /* SPLIT VIEW LAYOUT */
     .main-content-split {
         display: grid;
-        grid-template-columns: 1fr 480px; /* WIDENED FROM 400 TO 480 */
-        gap: 48px; /* WIDER GAP */
+        grid-template-columns: 1fr 480px; 
+        gap: 48px; 
         align-items: start;
     }
 
@@ -295,111 +296,111 @@
     }
 
     .job-card {
-        background: #1e293b; border: 1px solid #334155; border-radius: 16px;
+        background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px;
         padding: 24px; display: flex; flex-direction: column;
         transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
-    .job-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.2); border-color: #475569; }
-    .active-card { border-color: #3b82f6; box-shadow: 0 0 0 1px #3b82f6; } 
+    .job-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); border-color: #94a3b8; }
+    .active-card { border-color: #3b82f6; box-shadow: 0 0 0 2px #3b82f6; } 
 
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #334155; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; }
     .payout { font-size: 1.5rem; font-weight: 800; color: #10b981; }
-    .distance { font-size: 0.85rem; font-weight: 600; color: #94a3b8; background: #0f172a; padding: 4px 10px; border-radius: 12px; }
+    .distance { font-size: 0.85rem; font-weight: 700; color: #475569; background: #f1f5f9; padding: 4px 10px; border-radius: 12px; border: 1px solid #e2e8f0;}
 
     .route-info { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; position: relative; }
     .location { display: flex; align-items: flex-start; gap: 12px; z-index: 2; }
-    .dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 4px; border: 2px solid #0f172a; box-shadow: 0 0 0 2px currentColor; }
-    .pickup-dot { color: #38bdf8; background: #38bdf8; }
-    .delivery-dot { color: #a855f7; background: #a855f7; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 4px; border: 2px solid #ffffff; box-shadow: 0 0 0 2px currentColor; }
+    .pickup-dot { color: #0ea5e9; background: #0ea5e9; }
+    .delivery-dot { color: #8b5cf6; background: #8b5cf6; }
     
     .text-group { display: flex; flex-direction: column; }
     .label { font-size: 0.7rem; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }
-    .city { font-size: 1rem; font-weight: 600; color: #f1f5f9; }
+    .city { font-size: 1rem; font-weight: 700; color: #0f172a; }
 
-    .route-line { position: absolute; left: 5px; top: 20px; bottom: 20px; width: 2px; background: dashed 2px #334155; z-index: 1; }
+    .route-line { position: absolute; left: 5px; top: 20px; bottom: 20px; width: 2px; background: dashed 2px #cbd5e1; z-index: 1; }
 
-    .vehicle-info { font-size: 0.95rem; color: #cbd5e1; margin-bottom: 16px; }
+    .vehicle-info { font-size: 0.95rem; color: #475569; margin-bottom: 16px; font-weight: 500; }
     
     .ai-insight {
-        background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.1);
+        background: #f0f9ff; border: 1px solid #bae6fd;
         border-radius: 8px; padding: 12px; display: flex; gap: 10px; align-items: flex-start;
         margin-bottom: 24px; margin-top: auto; 
     }
     .ai-icon { font-size: 1.2rem; }
-    .ai-text { font-size: 0.85rem; color: #7dd3fc; line-height: 1.4; }
+    .ai-text { font-size: 0.85rem; color: #0369a1; line-height: 1.4; font-weight: 500; }
 
     .btn-accept {
         width: 100%; padding: 14px; border: none; border-radius: 8px;
         background: #3b82f6; color: white; font-size: 1rem; font-weight: 600;
-        cursor: pointer; transition: all 0.2s;
+        cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     .btn-accept:hover:not(:disabled) { background: #2563eb; }
-    .btn-accept:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; }
+    .btn-accept:disabled { background: #f1f5f9; color: #94a3b8; border: 1px solid #cbd5e1; cursor: not-allowed; box-shadow: none; }
     .btn-accept.loading { animation: pulse 1.5s infinite; }
     .sidebar-btn { width: auto; padding: 10px 20px; font-size: 0.9rem; border-radius: 8px; }
 
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
-    .empty-state { grid-column: 1 / -1; text-align: center; padding: 60px; color: #64748b; font-size: 1.1rem; }
+    .empty-state { grid-column: 1 / -1; text-align: center; padding: 60px; color: #64748b; font-size: 1.1rem; font-weight: 500; }
 
     /* --- RIGHT SIDEBAR: BIDDING STATION --- */
     .sidebar-wrapper { position: sticky; top: 40px; }
 
     .bidding-sidebar {
-        background: #1e293b; border: 1px solid #334155; border-radius: 16px;
+        background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px;
         overflow: hidden; display: flex; flex-direction: column;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     }
 
     .sidebar-header { 
-        background: #0f172a; 
-        padding: 32px; /* INCREASED PADDING */
-        border-bottom: 1px solid #334155; 
+        background: #f8fafc; 
+        padding: 32px; 
+        border-bottom: 1px solid #cbd5e1; 
     }
-    .sidebar-title { margin: 0; font-size: 1.25rem; font-weight: 700; color: #f8fafc; }
-    .sidebar-subtitle { margin: 4px 0 0 0; font-size: 0.85rem; color: #94a3b8; font-family: monospace;}
+    .sidebar-title { margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a; }
+    .sidebar-subtitle { margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b; font-family: monospace; font-weight: 600;}
 
-    .sidebar-content { padding: 32px; /* INCREASED PADDING */ }
-    .bids-title { margin: 0 0 16px 0; font-size: 0.95rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px;}
+    .sidebar-content { padding: 32px; }
+    .bids-title { margin: 0 0 16px 0; font-size: 0.95rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;}
     
-    /* UPGRADED BIDDING UI */
     .bids-list {
         max-height: 400px; overflow-y: auto; display: flex; flex-direction: column;
         gap: 16px; margin-bottom: 32px; padding-right: 12px;
     }
 
     .bids-list::-webkit-scrollbar { width: 6px; }
-    .bids-list::-webkit-scrollbar-track { background: #0f172a; border-radius: 4px;}
-    .bids-list::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    .bids-list::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px;}
+    .bids-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
     .bid-item {
-        background: #151e32; border: 1px solid #334155; 
-        padding: 24px; /* INCREASED PADDING */
+        background: #f8fafc; border: 1px solid #cbd5e1; 
+        padding: 24px; 
         border-radius: 16px; display: flex; flex-direction: column;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
     
     .bid-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-    .bid-driver { color: #f1f5f9; font-weight: 600; font-size: 1rem; }
+    .bid-driver { color: #0f172a; font-weight: 700; font-size: 1rem; }
     .bid-details { text-align: right; }
-    .bid-amount { display: block; color: #f8fafc; font-weight: 800; font-size: 1.25rem; }
+    .bid-amount { display: block; color: #0f172a; font-weight: 800; font-size: 1.25rem; }
     .bid-status { display: block; font-size: 0.65rem; font-weight: 700; color: #64748b; margin-top: 4px; letter-spacing: 0.5px;}
 
     .text-red-500 { color: #ef4444 !important; }
     .text-green-500 { color: #10b981 !important; }
-    .text-emerald-500 { color: #10b981 !important; }
+    .text-emerald-600 { color: #059669 !important; }
 
-    /* Action Boxes (Counter Offer & Success) */
+    /* Action Boxes */
     .action-box {
         margin-top: 16px; padding: 16px; border-radius: 12px;
         display: flex; justify-content: space-between; align-items: center;
     }
-    .counter-box { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); }
-    .success-box { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); }
+    .counter-box { background: #eff6ff; border: 1px solid #bfdbfe; }
+    .success-box { background: #ecfdf5; border: 1px solid #a7f3d0; }
 
     .box-text { display: flex; flex-direction: column; }
-    .box-label { font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .box-value { font-size: 1.25rem; font-weight: 800; color: #3b82f6; margin-top: 2px; }
+    .box-label { font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .box-value { font-size: 1.25rem; font-weight: 800; color: #2563eb; margin-top: 2px; }
     .box-subtext { font-size: 0.9rem; font-weight: 600; color: #10b981; margin-top: 2px; }
 
     .btn-success { background: #10b981; color: white; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
@@ -408,29 +409,29 @@
     .empty-bids { color: #64748b; font-size: 0.95rem; font-style: italic; text-align: center; padding: 30px 0; }
 
     .bid-input-group { 
-        border-top: 1px solid #334155; 
-        padding-top: 32px; /* INCREASED PADDING */
-        margin-top: 16px; /* PUSHES AWAY FROM BIDS */
+        border-top: 1px solid #cbd5e1; 
+        padding-top: 32px; 
+        margin-top: 16px; 
         display: flex; gap: 16px; 
     }
     
     .bid-input {
-        flex: 1; background: #0f172a; border: 1px solid #334155; color: white;
-        padding: 16px 20px; /* TALLER INPUT */
+        flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; color: #0f172a;
+        padding: 16px 20px; 
         border-radius: 12px; font-size: 1.1rem;
-        font-weight: 600; transition: border-color 0.2s;
+        font-weight: 600; transition: border-color 0.2s, background 0.2s;
     }
-    .bid-input:focus { outline: none; border-color: #3b82f6; }
-    .bid-input::placeholder { color: #475569; font-weight: 400; }
-    .submit-btn { padding: 16px 28px; border-radius: 12px; width: auto; } /* BIGGER BUTTON */
+    .bid-input:focus { outline: none; border-color: #3b82f6; background: #ffffff;}
+    .bid-input::placeholder { color: #94a3b8; font-weight: 500; }
+    .submit-btn { padding: 16px 28px; border-radius: 12px; width: auto; } 
 
     .empty-sidebar {
-        background: #1e293b; border: 2px dashed #334155; border-radius: 16px;
+        background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 16px;
         padding: 80px 30px; text-align: center; color: #64748b;
     }
-    .empty-icon { width: 64px; height: 64px; margin: 0 auto 16px auto; color: #334155; }
-    .empty-title { font-size: 1.25rem; font-weight: 700; color: #94a3b8; margin: 0 0 8px 0; }
-    .empty-subtitle { font-size: 0.95rem; line-height: 1.5; margin: 0; }
+    .empty-icon { width: 64px; height: 64px; margin: 0 auto 16px auto; color: #94a3b8; }
+    .empty-title { font-size: 1.25rem; font-weight: 800; color: #475569; margin: 0 0 8px 0; }
+    .empty-subtitle { font-size: 0.95rem; line-height: 1.5; margin: 0; font-weight: 500; }
 
     @media (max-width: 1024px) {
         .main-content-split { grid-template-columns: 1fr; }

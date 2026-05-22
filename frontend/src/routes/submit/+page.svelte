@@ -100,11 +100,11 @@
 </section>
 
 <style>
-    /* Scoped styles to give this page a premium dark-mode aesthetic */
+    /* Premium Light Theme Styles */
     .wizard-section {
         min-height: 100vh;
-        background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
-        color: #ffffff;
+        background: #f8fafc; /* slate-50 */
+        color: #0f172a;      /* slate-900 */
         padding: 60px 20px;
         font-family: 'Inter', system-ui, sans-serif;
     }
@@ -122,48 +122,47 @@
     }
 
     .back-link {
-        color: #94a3b8;
+        color: #64748b;
         text-decoration: none;
-        font-weight: 500;
+        font-weight: 600;
         font-size: 0.95rem;
         transition: color 0.2s ease;
     }
 
     .back-link:hover {
-        color: #60a5fa;
+        color: #2563eb;
     }
 
     .step-indicator {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
         padding: 6px 14px;
         border-radius: 20px;
         font-size: 0.85rem;
-        font-weight: 600;
+        font-weight: 700;
         letter-spacing: 0.5px;
-        color: #cbd5e1;
+        color: #475569;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
     }
 
     .wizard-card {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
         border-radius: 24px;
         padding: 48px;
-        backdrop-filter: blur(16px);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
     }
 
     .wizard-title {
         font-size: 2.2rem;
-        font-weight: 700;
+        font-weight: 800;
         margin: 0 0 12px 0;
-        background: linear-gradient(to right, #ffffff, #93c5fd);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: #0f172a;
+        letter-spacing: -0.025em; 
     }
 
     .wizard-sub {
-        color: #94a3b8;
+        color: #64748b;
         margin: 0 0 40px 0;
         font-size: 1.05rem;
         line-height: 1.5;
@@ -192,36 +191,36 @@
 
     label {
         font-size: 0.85rem;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        color: #94a3b8;
+        color: #475569;
     }
 
     input, select {
-        background: rgba(0, 0, 0, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
         border-radius: 12px;
         padding: 16px;
-        color: #ffffff;
+        color: #0f172a;
         font-size: 1rem;
         transition: all 0.2s ease;
     }
 
     input::placeholder {
-        color: #475569;
+        color: #94a3b8;
     }
 
     input:focus, select:focus {
         outline: none;
         border-color: #3b82f6;
         box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
-        background: rgba(0, 0, 0, 0.4);
+        background: #ffffff;
     }
 
     select option {
-        background: #0f172a;
-        color: #ffffff;
+        background: #ffffff;
+        color: #0f172a;
     }
 
     .input-wrapper {
@@ -239,18 +238,19 @@
         right: 8px;
         top: 50%;
         transform: translateY(-50%);
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
         border-radius: 8px;
         padding: 8px 12px;
         cursor: pointer;
         transition: all 0.2s ease;
         font-size: 1.1rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
 
     .scan-btn:hover {
-        background: rgba(255, 255, 255, 0.15);
-        border-color: #3b82f6;
+        background: #f0f9ff;
+        border-color: #bae6fd;
     }
 
     .submit-btn {
@@ -259,18 +259,18 @@
         padding: 18px;
         font-size: 1.1rem;
         border-radius: 12px;
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        background: #2563eb;
         color: white;
         border: none;
         font-weight: 600;
         cursor: pointer;
         transition: transform 0.1s ease, box-shadow 0.2s ease;
-        box-shadow: 0 10px 20px -10px rgba(37, 99, 235, 0.5);
     }
 
     .submit-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 15px 25px -10px rgba(37, 99, 235, 0.7);
+        background: #1d4ed8;
+        box-shadow: 0 10px 20px -10px rgba(37, 99, 235, 0.5);
     }
 
     @media (max-width: 600px) {
