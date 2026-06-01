@@ -23,6 +23,12 @@
 		"vite": "^8.0.7"
 	},
 	"dependencies": {
-		"svelte-clerk": "^1.1.9"
+		"@ai-sdk/google": "^3.0.80",
+		"@ai-sdk/openai": "^3.0.67",
+		"@ai-sdk/svelte": "^4.0.193",
+		"@upstash/vector": "^1.2.3",
+		"ai": "^6.0.193",
+		"svelte-clerk": "^1.1.9",
+		"zod": "^4.4.3"
 	}
 }

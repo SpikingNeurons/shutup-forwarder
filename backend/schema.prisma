@@ -29,7 +29,7 @@ model User {
   jobsCreated  Job[] @relation("CustomerJobs")
   jobsAccepted Job[] @relation("ForwarderJobs")
   
-  // NEW: A forwarder can make many bids
+  // A forwarder can make many bids
   bids         Bid[] @relation("ForwarderBids")
 }
 
@@ -61,19 +61,27 @@ model Job {
   aiReasoning    String
   aiComplexity   String
 
-  // NEW: Budget for AI Negotiation
+  // Budget for AI Negotiation
   targetPrice    Float?   // The budget Intake AI calculates
+
+  // ==========================================
+  // NEW: VECTOR DB HOOK
+  // ==========================================
+  // Stores the ID of the embedding living in Pinecone/Upstash
+  // so the AI Agent can link the math back to this exact Postgres row.
+  routeVectorId  String?  @unique
+  // ==========================================
 
   // System State
   status         String   @default("Reviewing") 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  // NEW: Relations
+  // Relations
   bids           Bid[]    // Links the Job to all its negotiations
 }
 
-// 4. NEW: The Negotiation Table (Bids)
+// 4. The Negotiation Table (Bids)
 model Bid {
   id              String   @id @default(cuid())
   
