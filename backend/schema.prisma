@@ -1,22 +1,31 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector] // Added for pgvector support
 }
 
 generator client {
   provider             = "prisma-client-py"
   interface            = "asyncio"
   recursive_type_depth = 5
+  previewFeatures      = ["postgresqlExtensions"] // Required to enable extensions
 }
 
-// 1. Strict Roles for Login Routing
+// 1. Configured to explicitly output to the SvelteKit node_modules context
+generator client_js {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+  output          = "../frontend/node_modules/.prisma/client" // FIXED: changed @ to a dot (.)
+}
+
+// 2. Strict Roles for Login Routing
 enum Role {
   CUSTOMER
   FORWARDER
   ADMIN
 }
 
-// 2. The User Table
+// 3. The User Table
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -37,7 +46,7 @@ model Job {
   id             String   @id @default(uuid())
   trackingNumber String   @unique @default(cuid()) 
   
-  // 3. Foreign Keys: Linking the Job to actual Users
+  // 4. Foreign Keys: Linking the Job to actual Users
   customerId     String?  // Made optional temporarily so we don't break your old dummy data
   customer       User?    @relation("CustomerJobs", fields: [customerId], references: [id])
   
@@ -65,11 +74,11 @@ model Job {
   targetPrice    Float?   // The budget Intake AI calculates
 
   // ==========================================
-  // NEW: VECTOR DB HOOK
+  // NEW: NATIVE NEON PGVECTOR
   // ==========================================
-  // Stores the ID of the embedding living in Pinecone/Upstash
-  // so the AI Agent can link the math back to this exact Postgres row.
-  routeVectorId  String?  @unique
+  // Stores the embedding array directly in Postgres,
+  // replacing the external Upstash reference.
+  embedding      Unsupported("vector(768)")?
   // ==========================================
 
   // System State
@@ -81,7 +90,7 @@ model Job {
   bids           Bid[]    // Links the Job to all its negotiations
 }
 
-// 4. The Negotiation Table (Bids)
+// 5. The Negotiation Table (Bids)
 model Bid {
   id              String   @id @default(cuid())
   
