@@ -1,74 +1,220 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { translations, type Lang } from '$lib/translations.js';
+    import { goto } from '$app/navigation';
     import { Chat } from '@ai-sdk/svelte';
-
-    let currentRole = $state('');
-    let isChatOpen = $state(false); 
-
-    // 1. Initialize the new Chat class (defaults to /api/chat automatically)
-    const chat = new Chat({});
     
-    // 2. Create a local state for the input field
+    // ── Reactive state ───────────────────────────────────────────────
+    let lang = $state<Lang>('en');
+    let t = $derived(translations[lang]);
+
+    let menuOpen = $state(false);
+    let isLoggedIn = $state(false);
+    let currentRole = $state('');
+
+    // ── Chat Agent State ─────────────────────────────────────────────
+    let isChatOpen = $state(false); 
+    const chat = new Chat({});
     let input = $state('');
 
-    // 3. Create a manual submit handler
     function handleChatSubmit(event: Event) {
         event.preventDefault();
         if (!input.trim()) return;
         
-        // Send the message using the new Chat class API
         chat.sendMessage({ text: input });
-        input = ''; // Clear the input field
+        input = ''; 
     }
 
-    onMount(() => {
+    // ── Quote form ───────────────────────────────────────────────────
+    let pickupAddr = $state('');
+    let deliveryAddr = $state('');
+    let carModel = $state('');
+    let email = $state('');
+    let quoteSubmitted = $state(false);
+    let quoteFields = $state({ pickup: true, delivery: true, car: true, email: true });
+
+    function setLang(l: Lang) {
+        lang = l;
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('shutup-lang', l);
+        }
+    }
+
+    function handleQuoteSubmit() {
+        quoteFields = {
+            pickup: !!pickupAddr.trim(),
+            delivery: !!deliveryAddr.trim(),
+            car: !!carModel.trim(),
+            email: !!email.trim()
+        };
+
+        if (!Object.values(quoteFields).every(Boolean)) return;
+
+        quoteSubmitted = true;
+
+        setTimeout(() => {
+            goto('/submit');
+        }, 1000); 
+    }
+
+    function handleLogout(e: Event) {
+        e.preventDefault();
+        if (typeof window !== 'undefined' && window.Clerk) {
+            window.Clerk.signOut({ redirectUrl: '/' }).then(() => {
+                isLoggedIn = false; 
+                currentRole = '';
+                localStorage.removeItem('userRole');
+            });
+        }
+    }
+
+    onMount(async () => {
+        const saved = localStorage.getItem('shutup-lang') as Lang | null;
+        if (saved === 'en' || saved === 'de') lang = saved;
+
         currentRole = localStorage.getItem('userRole') || '';
+
+        let checkInterval = setInterval(() => {
+            if (typeof window !== 'undefined' && window.Clerk) {
+                clearInterval(checkInterval); 
+                
+                if (window.Clerk.user) {
+                    isLoggedIn = true;
+                }
+            }
+        }, 50);
+
+        const nav = document.getElementById('nav');
+        const onScroll = () => nav?.classList.toggle('scrolled', window.scrollY > 10);
+        window.addEventListener('scroll', onScroll, { passive: true });
+
+        const revealObserver = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        revealObserver.unobserve(entry.target);
+                    }
+                });
+            },
+            { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+        );
+        const revealSelectors = [
+            '.step', '.feature-card', '.evidence-step', '.for-who-card',
+            '.testimonial', '.section-label', '.section-title', '.section-sub',
+            '.evidence-chain', '.driver-perks', '.protection-note'
+        ];
+        revealSelectors.forEach((sel) => {
+            document.querySelectorAll(sel).forEach((el, i) => {
+                el.classList.add('reveal');
+                (el as HTMLElement).style.transitionDelay = `${i * 80}ms`;
+                revealObserver.observe(el);
+            });
+        });
+
+        const sections = document.querySelectorAll<HTMLElement>('section[id]');
+        const navAnchors = document.querySelectorAll<HTMLAnchorElement>('.nav__links a[href^="#"]');
+        const sectionObserver = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        navAnchors.forEach((a) => {
+                            a.style.color = '';
+                            if (a.getAttribute('href') === `#${entry.target.id}`) {
+                                a.style.color = 'var(--c-primary)';
+                            }
+                        });
+                    }
+                });
+            },
+            { threshold: 0.4 }
+        );
+        sections.forEach((s) => sectionObserver.observe(s));
+
+        return () => {
+            clearInterval(checkInterval); 
+            window.removeEventListener('scroll', onScroll);
+            revealObserver.disconnect();
+            sectionObserver.disconnect();
+        };
     });
 </script>
 
-<div class="relative min-h-[85vh] w-full bg-white overflow-hidden flex items-center font-sans">
-    
-    <div class="absolute inset-0 bg-grid z-0"></div>
+<svelte:head>
+    <title>{t.page_title}</title>
+    <meta name="description" content={t.page_desc} />
+</svelte:head>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex flex-col lg:flex-row items-center justify-between gap-16">
-        
-        <div class="flex-1 max-w-2xl">
-            <div class="inline-flex items-center space-x-2 bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-medium mb-8 border border-blue-100">
-                <span class="text-blue-500">✦</span>
-                <span>Now with AI negotiation</span>
-            </div>
+<header class="nav" id="nav">
+    <div class="container nav__inner">
+        <a href="#" class="nav__logo">
+            <span class="logo-icon">🚗</span>
+            <span>ShutUP <strong>Forwarder</strong></span>
+        </a>
+        <nav class="nav__links" class:open={menuOpen} aria-label="Main navigation">
+            <a href="#how-it-works" onclick={() => (menuOpen = false)}>{t.nav_how}</a>
+            <a href="#step-by-step" onclick={() => (menuOpen = false)}>{t.nav_step}</a>
+            <a href="#features" onclick={() => (menuOpen = false)}>{t.nav_features}</a>
+            <a href="#faq" onclick={() => (menuOpen = false)}>{t.nav_faq}</a>
+            <a href="#drivers" class="nav__driver-link" onclick={() => (menuOpen = false)}>{t.nav_drivers}</a>
+        </nav>
+        <div class="nav__actions" class:open={menuOpen}>
+    <div class="lang-switcher">
+        <button class="lang-btn" class:active={lang === 'en'} onclick={() => setLang('en')}>EN</button>
+        <button class="lang-btn" class:active={lang === 'de'} onclick={() => setLang('de')}>DE</button>
+    </div>
 
-            <h1 class="text-6xl sm:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-2">
-                Your car, <br/> transported. <br/>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-                    Zero stress.
-                </span>
+    {#if isLoggedIn}
+        <button 
+            class="btn btn--ghost"
+            onclick={async (e) => { 
+                e.preventDefault();
+                localStorage.clear(); 
+                currentRole = ''; 
+                
+                if (typeof window !== 'undefined' && (window as any).Clerk) {
+                    await (window as any).Clerk.signOut();
+                }
+                
+                window.location.href = '/login'; 
+            }}
+        >
+            Logout
+        </button>
+    {:else}
+        <a href="/login" class="btn btn--ghost">{t.nav_signin}</a>
+    {/if}
+</div>
+        <button class="nav__burger" id="burger" aria-label="Open menu" onclick={() => (menuOpen = !menuOpen)}>
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</header>
+
+<section class="hero">
+    <div class="hero__bg-grid"></div>
+    <div class="container hero-flex">
+        <div class="hero__inner">
+            <div class="badge">{t.hero_badge}</div>
+            <h1 class="hero__headline">
+                {t.hero_h1_1}<br />
+                <span class="gradient-text">{t.hero_h1_2}</span>
             </h1>
-
-            <p class="mt-6 text-lg text-slate-600 leading-relaxed max-w-xl">
-                Snap a photo, drop a pin. Our AI finds a verified driver, locks in the best price, and watches over your car from pickup to delivery — with a photo record that protects you if anything goes wrong.
-            </p>
-
-            <div class="mt-10 flex flex-wrap items-center gap-4">
+            <p class="hero__sub">{t.hero_sub}</p>
+            
+            <!-- ── MERGED BUTTONS START ── -->
+            <div class="hero__ctas flex flex-wrap items-center gap-4 mt-8">
                 <a href="/submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-blue-200 no-underline">
                     Get an instant quote &rarr;
                 </a>
 
-                {#if !currentRole}
-                    <a href="/login" class="bg-white hover:bg-slate-50 text-slate-700 font-semibold py-3 px-6 rounded-lg border border-slate-200 transition-colors shadow-sm no-underline">
-                        Login
-                    </a>
-                {:else if currentRole === 'admin'}
+                {#if currentRole === 'admin'}
                     <a href="/admin" class="bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition-colors no-underline">
                         Command Center
                     </a>
                 {:else if currentRole === 'employee'}
                     <a href="/jobs" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition-colors no-underline">
                         Find Loads
-                    </a>
-                {:else}
-                    <a href="/submit/tracking" class="bg-white hover:bg-slate-50 text-slate-700 font-semibold py-3 px-6 rounded-lg border border-slate-200 transition-colors shadow-sm no-underline">
-                        Track My Car
                     </a>
                 {/if}
 
@@ -79,84 +225,515 @@
                     🤖 Test AI Agent
                 </button>
             </div>
+            <!-- ── MERGED BUTTONS END ── -->
 
-            <div class="mt-10 flex items-center gap-6 text-sm text-slate-500">
-                <div class="flex items-center gap-2">
-                    <span class="text-yellow-400">★★★★★</span>
-                    <span>4.8 · 2,000+ transports</span>
+            <div class="hero__trust mt-10">
+                <div class="trust-item">
+                    <span class="trust-stars">★★★★★</span>
+                    <span>{t.hero_trust_rating}</span>
                 </div>
-                <div class="w-px h-4 bg-slate-300"></div>
-                <div class="flex items-center gap-2">
-                    <span>📷 Photos locked at pickup</span>
-                </div>
+                <div class="trust-divider"></div>
+                <div class="trust-item">{t.hero_trust_photos}</div>
+                <div class="trust-divider"></div>
+                <div class="trust-item">{t.hero_trust_ai}</div>
+                <div class="trust-divider"></div>
+                <div class="trust-item">{t.hero_trust_europe}</div>
             </div>
         </div>
 
-        <div class="flex-1 flex justify-center lg:justify-end hidden md:flex">
-            <div class="bg-slate-900 rounded-[2.5rem] p-3 shadow-2xl w-80 border-8 border-slate-800 transform rotate-2 hover:rotate-0 transition-transform duration-500">
-                <div class="bg-white rounded-[1.8rem] h-full w-full p-6 flex flex-col">
-                    
-                    <div class="text-center mb-6">
-                        <span class="text-xs font-semibold text-slate-400 tracking-wider">Job #SF-4821</span>
-                        <h3 class="font-bold text-lg text-slate-900 mt-1">Amsterdam &rarr; Munich</h3>
-                        <p class="text-xs text-slate-500 mt-1">BMW 3 Series · 2019</p>
+        <div class="hero__mockup-wrap">
+            <div class="phone-mockup">
+                <div class="phone-screen">
+                    <div class="phone-bar">
+                        <span class="phone-dot"></span>
+                        <span class="phone-title">{t.phone_job}</span>
+                        <span class="phone-dot"></span>
                     </div>
-
-                    <div class="space-y-4 mb-8">
-                        <div class="flex items-start gap-3">
-                            <div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs mt-0.5">✓</div>
-                            <div>
-                                <p class="text-sm font-semibold text-emerald-600">Car collected</p>
-                                <p class="text-xs text-slate-400">Thu 09:00</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs mt-0.5">✓</div>
-                            <div>
-                                <p class="text-sm font-semibold text-emerald-600">Departed Netherlands</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center mt-0.5 relative">
-                                <div class="w-2 h-2 rounded-full bg-blue-600"></div>
-                                <div class="absolute w-2 h-2 rounded-full bg-blue-600 animate-ping"></div>
-                            </div>
-                            <div>
-                                <p class="text-sm font-semibold text-blue-600">Cologne — on schedule</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <div class="w-5 h-5 rounded-full border-2 border-slate-200 flex items-center justify-center mt-0.5"></div>
-                            <div>
-                                <p class="text-sm font-medium text-slate-400">Munich</p>
-                                <p class="text-xs text-slate-400">Est. Sat 09:00</p>
-                            </div>
-                        </div>
+                    <div class="phone-row phone-route">{t.phone_route}</div>
+                    <div class="phone-row phone-car">{t.phone_car}</div>
+                    <div class="phone-timeline">
+                        <div class="tl-item tl-done">{t.phone_collected}</div>
+                        <div class="tl-item tl-done">{t.phone_departed}</div>
+                        <div class="tl-item tl-active">{t.phone_active}</div>
+                        <div class="tl-item tl-future">{t.phone_future}</div>
                     </div>
-
-                    <div class="mt-auto border-t border-slate-100 pt-4">
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden text-2xl flex items-center justify-center">🚐</div>
-                                <span class="text-sm font-semibold">Pieter van Dam</span>
-                            </div>
-                            <span class="text-xs font-bold text-slate-700">★ 4.7</span>
-                        </div>
-                        <div class="flex gap-2">
-                            <button class="flex-1 bg-white border border-slate-200 rounded-lg py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">📞 Call</button>
-                            <button class="flex-1 bg-emerald-50 border border-emerald-100 rounded-lg py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors">💬 Message</button>
-                        </div>
+                    <div class="phone-driver">
+                        <span>{t.phone_driver}</span>
+                        <span class="driver-stars">★★★★☆ 4.7</span>
                     </div>
-
+                    <div class="phone-actions">
+                        <button class="phone-btn phone-btn--call">📞 Call</button>
+                        <button class="phone-btn phone-btn--msg">💬 Message</button>
+                    </div>
                 </div>
             </div>
         </div>
-
     </div>
-</div>
+</section>
 
+<section class="section" id="how-it-works">
+    <div class="container">
+        <div class="section-label">{t.how_label}</div>
+        <h2 class="section-title">{t.how_title}</h2>
+        <p class="section-sub">{t.how_sub}</p>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step__num">01</div>
+                <div class="step__icon">📋</div>
+                <h3>{t.step1_title}</h3>
+                <p>{t.step1_desc}</p>
+            </div>
+            <div class="step__connector"></div>
+            <div class="step">
+                <div class="step__num">02</div>
+                <div class="step__icon">🤖</div>
+                <h3>{t.step2_title}</h3>
+                <p>{t.step2_desc}</p>
+            </div>
+            <div class="step__connector"></div>
+            <div class="step">
+                <div class="step__num">03</div>
+                <div class="step__icon">✅</div>
+                <h3>{t.step3_title}</h3>
+                <p>{t.step3_desc}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section section--alt" id="features">
+    <div class="container">
+        <div class="section-label">{t.features_label}</div>
+        <h2 class="section-title">{t.features_title}</h2>
+        <p class="section-sub">{t.features_sub}</p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🤝</div>
+                <h3>{t.feat1_title}</h3>
+                <p>{t.feat1_desc}</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📸</div>
+                <h3>{t.feat2_title}</h3>
+                <p>{t.feat2_desc}</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📍</div>
+                <h3>{t.feat3_title}</h3>
+                <p>{t.feat3_desc}</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3>{t.feat4_title}</h3>
+                <p>{t.feat4_desc}</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📄</div>
+                <h3>{t.feat5_title}</h3>
+                <p>{t.feat5_desc}</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📜</div>
+                <h3>{t.feat6_title}</h3>
+                <p>{t.feat6_desc}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="protection">
+    <div class="container">
+        <div class="section-label">{t.prot_label}</div>
+        <h2 class="section-title">{t.prot_title}</h2>
+        <p class="section-sub">{t.prot_sub}</p>
+
+        <div class="evidence-chain">
+            <div class="evidence-step">
+                <div class="evidence-icon">📱</div>
+                <h4>{t.ev1_title}</h4>
+                <p>{t.ev1_desc}</p>
+                <div class="evidence-badge">🔒 Locked</div>
+            </div>
+            <div class="evidence-arrow">→</div>
+            <div class="evidence-step">
+                <div class="evidence-icon">🚛</div>
+                <h4>{t.ev2_title}</h4>
+                <p>{t.ev2_desc}</p>
+                <div class="evidence-badge">🔒 Locked</div>
+            </div>
+            <div class="evidence-arrow">→</div>
+            <div class="evidence-step">
+                <div class="evidence-icon">🏠</div>
+                <h4>{t.ev3_title}</h4>
+                <p>{t.ev3_desc}</p>
+                <div class="evidence-badge">🔒 Locked</div>
+            </div>
+            <div class="evidence-arrow">→</div>
+            <div class="evidence-step evidence-step--result">
+                <div class="evidence-icon">🤖</div>
+                <h4>{t.ev4_title}</h4>
+                <p>{t.ev4_desc}</p>
+                <div class="evidence-badge evidence-badge--ai">✦ AI Report</div>
+            </div>
+        </div>
+
+        <div class="protection-note">
+            <strong>{t.prot_note_strong}</strong> {t.prot_note}
+        </div>
+    </div>
+</section>
+
+<section class="section section--alt" id="for-who">
+    <div class="container">
+        <div class="section-label">{t.who_label}</div>
+        <h2 class="section-title">{t.who_title}</h2>
+
+        <div class="for-who-grid">
+            <div class="for-who-card">
+                <div class="for-who-icon">🧑</div>
+                <h3>{t.ind_title}</h3>
+                <ul>
+                    <li>{t.ind_li1}</li>
+                    <li>{t.ind_li2}</li>
+                    <li>{t.ind_li3}</li>
+                    <li>{t.ind_li4}</li>
+                </ul>
+                <a href="#quote" class="btn btn--primary">{t.ind_cta}</a>
+            </div>
+            <div class="for-who-card for-who-card--business">
+                <div class="for-who-card__badge">{t.biz_badge}</div>
+                <div class="for-who-icon">🏢</div>
+                <h3>{t.biz_title}</h3>
+                <ul>
+                    <li>{t.biz_li1}</li>
+                    <li>{t.biz_li2}</li>
+                    <li>{t.biz_li3}</li>
+                    <li>{t.biz_li4}</li>
+                </ul>
+                <a href="#quote" class="btn btn--primary">{t.biz_cta}</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section drivers-section" id="drivers">
+    <div class="container drivers-inner">
+        <div class="drivers-text">
+            <div class="section-label section-label--light">{t.drv_label}</div>
+            <h2 class="section-title section-title--light">{t.drv_title}</h2>
+            <p class="section-sub section-sub--light">{t.drv_sub}</p>
+            <ul class="driver-perks">
+                <li>{t.drv_li1}</li>
+                <li>{t.drv_li2}</li>
+                <li>{t.drv_li3}</li>
+                <li>{t.drv_li4}</li>
+                <li>{t.drv_li5}</li>
+            </ul>
+            <a href="#" class="btn btn--white btn--lg">{t.drv_cta}</a>
+        </div>
+        <div class="drivers-mockup">
+            <div class="phone-mockup phone-mockup--dark">
+                <div class="phone-screen phone-screen--dark">
+                    <div class="phone-bar phone-bar--dark">
+                        <span class="phone-title">{t.drv_jobs}</span>
+                        <span class="phone-notif">🔔 2</span>
+                    </div>
+                    <div class="job-card">
+                        <div class="job-route">Amsterdam → Munich</div>
+                        <div class="job-car">BMW 3 Series · 2019</div>
+                        <div class="job-date">📅 Thu 22 Apr</div>
+                        <div class="job-price">💶 €320 – €380</div>
+                        <div class="job-btns">
+                            <button class="job-btn job-btn--bid">💬 Bid</button>
+                            <button class="job-btn job-btn--accept">✅ Accept</button>
+                        </div>
+                    </div>
+                    <div class="job-card job-card--dim">
+                        <div class="job-route">Rotterdam → Berlin</div>
+                        <div class="job-car">VW Golf · ⚠️ Non-running</div>
+                        <div class="job-date">📅 Fri 23 Apr</div>
+                        <div class="job-price">💶 €290 – €350</div>
+                        <div class="job-btns">
+                            <button class="job-btn job-btn--bid">💬 Bid</button>
+                            <button class="job-btn job-btn--accept">✅ Accept</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="step-by-step">
+    <div class="container">
+        <div class="section-label">{t.sbs_label}</div>
+        <h2 class="section-title">{t.sbs_title}</h2>
+
+        <div class="deep-step">
+            <div class="deep-step__header">
+                <div class="deep-step__num">{t.s1_num}</div>
+                <h3>{t.s1_title}</h3>
+            </div>
+            <p class="deep-step__desc">{@html t.s1_desc}</p>
+        </div>
+
+        <div class="deep-step">
+            <div class="deep-step__header">
+                <div class="deep-step__num">{t.s2_num}</div>
+                <h3>{t.s2_title}</h3>
+            </div>
+            <p class="deep-step__desc">{t.s2_desc}</p>
+        </div>
+
+        <div class="deep-step">
+            <div class="deep-step__header">
+                <div class="deep-step__num">{t.s3_num}</div>
+                <h3>{t.s3_title}</h3>
+            </div>
+            <p class="deep-step__desc">{@html t.s3_desc}</p>
+        </div>
+
+        <div class="deep-step">
+            <div class="deep-step__header">
+                <div class="deep-step__num">{t.s4_num}</div>
+                <h3>{t.s4_title}</h3>
+            </div>
+            <p class="deep-step__desc">{t.s4_desc}</p>
+        </div>
+
+        <div class="deep-step">
+            <div class="deep-step__header">
+                <div class="deep-step__num">{t.s5_num}</div>
+                <h3>{t.s5_title}</h3>
+            </div>
+            <p class="deep-step__desc">{t.s5_desc}</p>
+        </div>
+
+        <div class="deep-step">
+            <div class="deep-step__header">
+                <div class="deep-step__num">{t.s6_num}</div>
+                <h3>{t.s6_title}</h3>
+            </div>
+            <p class="deep-step__desc">{@html t.s6_desc}</p>
+        </div>
+    </div>
+</section>
+
+<section class="section section--alt" id="agents">
+    <div class="container">
+        <div class="section-label">{t.agents_label}</div>
+        <h2 class="section-title">{t.agents_title}</h2>
+        <p class="section-sub">{t.agents_sub}</p>
+
+        <div class="roles-table-wrap">
+            <table class="roles-table">
+                <thead>
+                    <tr><th>{t.roles_who}</th><th>{t.roles_what}</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>🧑 <strong>{t.role_customer}</strong></td>
+                        <td>{t.role_customer_desc}</td>
+                    </tr>
+                    <tr>
+                        <td>🚛 <strong>{t.role_driver}</strong></td>
+                        <td>{t.role_driver_desc}</td>
+                    </tr>
+                    <tr>
+                        <td>👩‍💼 <strong>{t.role_ops}</strong></td>
+                        <td>{t.role_ops_desc}</td>
+                    </tr>
+                    <tr>
+                        <td>👨‍💼 <strong>{t.role_adjuster}</strong></td>
+                        <td>{t.role_adjuster_desc}</td>
+                    </tr>
+                    <tr>
+                        <td>🔧 <strong>{t.role_admin}</strong></td>
+                        <td>{t.role_admin_desc}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section class="section section--alt" id="faq">
+    <div class="container faq-container">
+        <div class="section-label">{t.faq_label}</div>
+        <h2 class="section-title">{t.faq_title}</h2>
+        <div class="faq-list">
+            <details class="faq-item">
+                <summary>{t.faq_q1}</summary>
+                <p>{t.faq_a1}</p>
+            </details>
+            <details class="faq-item">
+                <summary>{t.faq_q2}</summary>
+                <p>{t.faq_a2}</p>
+            </details>
+            <details class="faq-item">
+                <summary>{t.faq_q3}</summary>
+                <p>{t.faq_a3}</p>
+            </details>
+            <details class="faq-item">
+                <summary>{t.faq_q4}</summary>
+                <p>{t.faq_a4}</p>
+            </details>
+            <details class="faq-item">
+                <summary>{t.faq_q5}</summary>
+                <p>{t.faq_a5}</p>
+            </details>
+            <details class="faq-item">
+                <summary>{t.faq_q6}</summary>
+                <p>{t.faq_a6}</p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="testimonials">
+    <div class="container">
+        <div class="section-label">{t.test_label}</div>
+        <h2 class="section-title">{t.test_title}</h2>
+        <div class="testimonials-grid">
+            <div class="testimonial">
+                <div class="testimonial-stars">★★★★★</div>
+                <p>{t.test1_text}</p>
+                <div class="testimonial-author">{t.test1_author}</div>
+            </div>
+            <div class="testimonial">
+                <div class="testimonial-stars">★★★★★</div>
+                <p>{t.test2_text}</p>
+                <div class="testimonial-author">{t.test2_author}</div>
+            </div>
+            <div class="testimonial">
+                <div class="testimonial-stars">★★★★★</div>
+                <p>{t.test3_text}</p>
+                <div class="testimonial-author">{t.test3_author}</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section cta-section" id="quote">
+    <div class="container cta-inner">
+        <h2 class="cta-title">{t.cta_title}</h2>
+        <p class="cta-sub">{t.cta_sub}</p>
+        <div class="quote-form">
+            <div class="quote-row">
+                <div class="quote-field">
+                    <label for="pickup">{t.quote_pickup_label}</label>
+                    <input
+                        id="pickup"
+                        type="text"
+                        placeholder={t.quote_pickup_ph}
+                        bind:value={pickupAddr}
+                        style={!quoteFields.pickup ? 'border-color: #f87171' : ''}
+                    />
+                </div>
+                <div class="quote-arrow">→</div>
+                <div class="quote-field">
+                    <label for="delivery">{t.quote_delivery_label}</label>
+                    <input
+                        id="delivery"
+                        type="text"
+                        placeholder={t.quote_delivery_ph}
+                        bind:value={deliveryAddr}
+                        style={!quoteFields.delivery ? 'border-color: #f87171' : ''}
+                    />
+                </div>
+            </div>
+            <div class="quote-row quote-row--bottom">
+                <div class="quote-field">
+                    <label for="car">{t.quote_car_label}</label>
+                    <input
+                        id="car"
+                        type="text"
+                        placeholder={t.quote_car_ph}
+                        bind:value={carModel}
+                        style={!quoteFields.car ? 'border-color: #f87171' : ''}
+                    />
+                </div>
+                <div class="quote-field">
+                    <label for="email">{t.quote_email_label}</label>
+                    <input
+                        id="email"
+                        type="email"
+                        placeholder={t.quote_email_ph}
+                        bind:value={email}
+                        style={!quoteFields.email ? 'border-color: #f87171' : ''}
+                    />
+                </div>
+                <button
+                    class="btn btn--primary btn--lg quote-submit"
+                    disabled={quoteSubmitted}
+                    onclick={handleQuoteSubmit}
+                >
+                    {quoteSubmitted ? t.quote_submitted : t.quote_btn}
+                </button>
+            </div>
+            <p class="quote-note">{t.quote_note}</p>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="container footer-inner">
+        <div class="footer-brand">
+            <a href="#" class="nav__logo">
+                <span class="logo-icon">🚗</span>
+                <span>ShutUP <strong>Forwarder</strong></span>
+            </a>
+            <p>{t.footer_tagline}</p>
+            <div class="footer-social">
+                <a href="#" aria-label="LinkedIn">in</a>
+                <a href="#" aria-label="Instagram">ig</a>
+                <a href="#" aria-label="Facebook">fb</a>
+            </div>
+        </div>
+        <div class="footer-links">
+            <div class="footer-col">
+                <h5>{t.footer_platform}</h5>
+                <a href="#how-it-works">{t.footer_how}</a>
+                <a href="#features">{t.footer_features}</a>
+                <a href="#protection">{t.footer_protection}</a>
+                <a href="#for-who">{t.footer_businesses}</a>
+                <a href="#drivers">{t.footer_drivers}</a>
+            </div>
+            <div class="footer-col">
+                <h5>{t.footer_routes}</h5>
+                <a href="#">{t.footer_nl}</a>
+                <a href="#">{t.footer_de}</a>
+                <a href="#">{t.footer_be}</a>
+                <a href="#">{t.footer_fr}</a>
+                <a href="#">{t.footer_europe}</a>
+            </div>
+            <div class="footer-col">
+                <h5>{t.footer_company}</h5>
+                <a href="#">{t.footer_about}</a>
+                <a href="#">{t.footer_blog}</a>
+                <a href="#">{t.footer_careers}</a>
+                <a href="#">{t.footer_contact}</a>
+            </div>
+            <div class="footer-col">
+                <h5>{t.footer_legal}</h5>
+                <a href="#">{t.footer_terms}</a>
+                <a href="#">{t.footer_privacy}</a>
+                <a href="#">{t.footer_cookies}</a>
+                <a href="#">{t.footer_cmr}</a>
+            </div>
+        </div>
+    </div>
+    <div class="container footer-bottom">
+        <span>{t.footer_copyright}</span>
+        <span>{t.footer_built}</span>
+    </div>
+</footer>
+
+<!-- ── CHAT DRAWER START ── -->
 {#if isChatOpen}
-    <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-end">
+    <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[9999] flex justify-end font-sans">
         <button class="absolute inset-0 cursor-default bg-transparent border-none w-full h-full" onclick={() => isChatOpen = false} aria-label="Close chat"></button>
         
         <div class="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col z-10 border-l border-slate-200">
@@ -167,7 +744,8 @@
                 </div>
                 <button onclick={() => isChatOpen = false} class="text-slate-400 hover:text-slate-600 text-xl font-bold p-1">&times;</button>
             </div>
-<div class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/50">
+            
+            <div class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/50">
                 {#if chat.messages.length === 0}
                     <div class="text-center text-sm text-slate-400 my-8 px-4">
                         Ask the agent to query the database or find the vector we pushed in our Python backend test!
@@ -204,27 +782,40 @@
                     </div>
                 {/each}
             </div>
-            <form onsubmit={handleChatSubmit} class="p-4 border-t border-slate-100 bg-white flex gap-2">
+            
+            <form onsubmit={handleChatSubmit} class="p-4 border-t border-slate-100 bg-white flex gap-2 m-0">
                 <input 
                     bind:value={input} 
                     placeholder="Ask about the test vector..." 
-                    class="flex-1 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-600 transition-colors" 
+                    class="flex-1 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-600 transition-colors m-0" 
                 />
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors shadow-sm">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors shadow-sm border-none m-0">
                     Send
                 </button>
             </form>
         </div>
     </div>
 {/if}
+<!-- ── CHAT DRAWER END ── -->
 
 <style>
-    .bg-grid {
-        background-size: 40px 40px;
-        background-image: 
-            linear-gradient(to right, rgba(226, 232, 240, 0.6) 1px, transparent 1px), 
-            linear-gradient(to bottom, rgba(226, 232, 240, 0.6) 1px, transparent 1px);
-        mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
-        -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    /* Desktop layout for Hero */
+    @media (min-width: 1024px) {
+        .hero-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+        .hero__inner, .hero__mockup-wrap {
+            flex: 1;
+            margin: 0 !important;
+        }
+        .hero__mockup-wrap {
+            display: flex;
+            justify-content: flex-end;
+        }
     }
 </style>
