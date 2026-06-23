@@ -3,7 +3,6 @@
 
     onMount(() => {
         const checkUser = setInterval(() => {
-            // Reverted to your exact original check that we know works!
             if (typeof window !== 'undefined' && (window as any).Clerk) {
                 clearInterval(checkUser); 
                 
@@ -17,17 +16,11 @@
                 // Grab the role from Clerk
                 const role = user.publicMetadata?.role || user.unsafeMetadata?.role || 'client';
                 
-                // Write it to Svelte's memory
+                // Write it to Svelte's memory so the root page knows what buttons to show
                 localStorage.setItem('userRole', role);
                 
-                // Hard-redirect to force the layout to read the new memory
-                if (role === 'admin') {
-                    window.location.href = '/admin';
-                } else if (role === 'employee') {
-                    window.location.href = '/jobs';
-                } else {
-                    window.location.href = '/';
-                }
+                // Send EVERYONE to the root dashboard first
+                window.location.href = '/';
             }
         }, 50); 
     });

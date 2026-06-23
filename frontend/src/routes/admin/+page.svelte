@@ -3,7 +3,7 @@
 
     interface Job {
         id: string;
-        trackingNumber: string;
+        jobNumber: number; // ── NEW: Clean integer ID ──
         make: string;
         model: string;
         year: number;
@@ -19,11 +19,11 @@
     let isLoading = $state(true);
     let filter = $state('all'); // 'all', 'invalid', 'valid'
 
-    // Your exact premium European dummy loads
+    // Your exact premium European dummy loads (updated to use jobNumber)
     const dummyJobs: Job[] = [
         {
             id: 'SF-9041',
-            trackingNumber: 'SF-9041-ROTT-STUTT',
+            jobNumber: 9041,
             make: 'Mercedes-Benz',
             model: 'G-Class',
             year: 2023,
@@ -35,7 +35,7 @@
         },
         {
             id: 'SF-4821',
-            trackingNumber: 'SF-4821-AMST-MUNI',
+            jobNumber: 4821,
             make: 'BMW',
             model: '3 Series',
             year: 2019,
@@ -47,7 +47,7 @@
         },
         {
             id: 'SF-3110',
-            trackingNumber: 'SF-3110-ANTW-LYON',
+            jobNumber: 3110,
             make: 'Audi',
             model: 'A6 Avant',
             year: 2021,
@@ -91,14 +91,14 @@
     });
 
     // Active deletion handler connected directly to your backend endpoint
-    async function deleteJob(id: string, trackingNumber: string) {
+    async function deleteJob(id: string, jobNumber: number) {
         // Prevent deleting our static frontend demo files
         if (id.startsWith('SF-')) {
             alert("Static demo manifest items cannot be deleted from the remote cluster.");
             return;
         }
 
-        const confirmed = confirm(`Are you sure you want to delete Job #${trackingNumber}? This cannot be undone.`);
+        const confirmed = confirm(`Are you sure you want to delete Job SF-${jobNumber}? This cannot be undone.`);
         if (!confirmed) return;
 
         try {
@@ -108,7 +108,7 @@
 
             if (response.ok) {
                 dbJobs = dbJobs.filter(job => job.id !== id);
-                console.log(`Job ${trackingNumber} deleted successfully.`);
+                console.log(`Job SF-${jobNumber} deleted successfully.`);
             } else {
                 const error = await response.json();
                 alert("Failed to delete: " + error.detail);
@@ -189,8 +189,9 @@
                     <div class="space-y-2 max-w-xl flex-1">
                         <div class="flex items-center gap-3 flex-wrap">
                             <span class="font-mono text-xs font-bold bg-slate-900 text-white px-2 py-0.5 rounded shadow-sm">
-                                #{job.trackingNumber ? job.trackingNumber.slice(0, 12) : job.id}...
+                                SF-{job.jobNumber || 'ERR'}
                             </span>
+                            
                             <span class="text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border
                                        {job.aiIsValid ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}">
                                 {job.aiIsValid ? 'Cleared' : 'Flagged Exception'}
@@ -230,7 +231,7 @@
                         </a>
 
                         <button 
-                            onclick={() => deleteJob(job.id, job.trackingNumber)} 
+                            onclick={() => deleteJob(job.id, job.jobNumber)} 
                             class="bg-transparent border border-rose-200/60 hover:border-rose-400 text-rose-500 hover:bg-rose-50/50 p-2.5 rounded-lg transition-all cursor-pointer"
                             title="Purge shipping sequence reference"
                         >

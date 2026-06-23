@@ -26,8 +26,18 @@
         }
     });
 
+    // ── DEV TOOL: Single, simple mock data injection ──
+    function fillMockData() {
+        vehicle.vin = 'WVWZZZCDZNW123456';
+        vehicle.make = 'Volkswagen';
+        vehicle.model = 'Golf 8';
+        vehicle.year = '2022';
+        vehicle.fuelType = 'Petrol';
+        vehicle.mileage = '45000';
+    }
+
     function handleNext(event: Event) {
-    event.preventDefault();
+        event.preventDefault();
         
         console.log("Proceeding to Step 2 with:", vehicle);
         sessionStorage.setItem('shutup-step1-vehicle', JSON.stringify(vehicle));
@@ -43,7 +53,13 @@
     <div class="container wizard-container">
         <div class="wizard-header">
             <a href="/" class="back-link">← Back to home</a>
-            <div class="step-indicator">Step 1 of 5</div>
+            
+            <div class="header-right">
+                <button type="button" class="mock-btn" onclick={fillMockData} title="Fill test vehicle data">
+                    🧪 Mock Data
+                </button>
+                <div class="step-indicator">Step 1 of 5</div>
+            </div>
         </div>
 
         <div class="wizard-card">
@@ -119,6 +135,30 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 30px;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .mock-btn {
+        background: #f1f5f9;
+        border: 1px dashed #cbd5e1;
+        color: #64748b;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .mock-btn:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+        border-color: #94a3b8;
     }
 
     .back-link {

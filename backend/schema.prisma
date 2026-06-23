@@ -44,7 +44,10 @@ model User {
 
 model Job {
   id             String   @id @default(uuid())
-  trackingNumber String   @unique @default(cuid()) 
+  
+  // NEW: Auto-incrementing integer for human-readable IDs (e.g. 1, 2, 3...)
+  // In the UI, we will display this as SF-1, SF-2, etc.
+  jobNumber      Int      @unique @default(autoincrement()) 
   
   // 4. Foreign Keys: Linking the Job to actual Users
   customerId     String?  // Made optional temporarily so we don't break your old dummy data

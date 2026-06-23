@@ -2,7 +2,6 @@
     import { onMount } from 'svelte';
     import { translations, type Lang } from '$lib/translations.js';
     import { goto } from '$app/navigation';
-    import { Chat } from '@ai-sdk/svelte';
     
     // ── Reactive state ───────────────────────────────────────────────
     let lang = $state<Lang>('en');
@@ -11,19 +10,6 @@
     let menuOpen = $state(false);
     let isLoggedIn = $state(false);
     let currentRole = $state('');
-
-    // ── Chat Agent State ─────────────────────────────────────────────
-    let isChatOpen = $state(false); 
-    const chat = new Chat({});
-    let input = $state('');
-
-    function handleChatSubmit(event: Event) {
-        event.preventDefault();
-        if (!input.trim()) return;
-        
-        chat.sendMessage({ text: input });
-        input = ''; 
-    }
 
     // ── Quote form ───────────────────────────────────────────────────
     let pickupAddr = $state('');
@@ -72,17 +58,28 @@
         const saved = localStorage.getItem('shutup-lang') as Lang | null;
         if (saved === 'en' || saved === 'de') lang = saved;
 
+        // 1. Grab the role from memory
         currentRole = localStorage.getItem('userRole') || '';
 
+        // 2. INSTANT UI FIX: If they have a role, they are logged in. Show the Logout button immediately.
+        if (currentRole) {
+            isLoggedIn = true;
+        }
+
+        // 3. Robust Clerk Polling: Don't stop checking until the user is actually loaded
         let checkInterval = setInterval(() => {
             if (typeof window !== 'undefined' && window.Clerk) {
-                clearInterval(checkInterval); 
-                
                 if (window.Clerk.user) {
                     isLoggedIn = true;
+                    clearInterval(checkInterval); // NOW we can safely stop checking
                 }
             }
-        }, 50);
+        }, 100);
+
+        // Safety net: kill the interval after 3 seconds if they are genuinely logged out
+        setTimeout(() => {
+            clearInterval(checkInterval);
+        }, 3000);
 
         const nav = document.getElementById('nav');
         const onScroll = () => nav?.classList.toggle('scrolled', window.scrollY > 10);
@@ -148,7 +145,15 @@
 <header class="nav" id="nav">
     <div class="container nav__inner">
         <a href="#" class="nav__logo">
-            <span class="logo-icon">🚗</span>
+            <span class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                    <path d="M10 17h4V5H2v12h3"></path>
+                    <path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5"></path>
+                    <path d="M14 17h1"></path>
+                    <circle cx="7.5" cy="17.5" r="2.5"></circle>
+                    <circle cx="17.5" cy="17.5" r="2.5"></circle>
+                </svg>
+            </span>
             <span>ShutUP <strong>Forwarder</strong></span>
         </a>
         <nav class="nav__links" class:open={menuOpen} aria-label="Main navigation">
@@ -169,14 +174,21 @@
             class="btn btn--ghost"
             onclick={async (e) => { 
                 e.preventDefault();
-                localStorage.clear(); 
-                currentRole = ''; 
                 
+                // 1. Instantly update Svelte's reactive state
+                isLoggedIn = false;
+                currentRole = '';
+                
+                // 2. Clear Svelte's memory
+                localStorage.clear(); 
+                
+                // 3. Sign out of Clerk securely
                 if (typeof window !== 'undefined' && (window as any).Clerk) {
                     await (window as any).Clerk.signOut();
                 }
                 
-                window.location.href = '/login'; 
+                // 4. Force a hard refresh of the dashboard to reset everything
+                window.location.reload();
             }}
         >
             Logout
@@ -216,14 +228,14 @@
                     <a href="/jobs" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition-colors no-underline">
                         Find Loads
                     </a>
+                    <a href="/jobs/active" class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:opacity-90 transition-opacity flex items-center gap-2 no-underline">
+                        📦 My Deliveries
+                    </a>
+                {:else if isLoggedIn}
+                    <a href="/submit/tracking" class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:opacity-90 transition-opacity flex items-center gap-2 no-underline">
+                        📍 Live Tracking
+                    </a>
                 {/if}
-
-                <button 
-                    onclick={() => isChatOpen = !isChatOpen}
-                    class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:opacity-90 transition-opacity flex items-center gap-2"
-                >
-                    🤖 Test AI Agent
-                </button>
             </div>
             <!-- ── MERGED BUTTONS END ── -->
 
@@ -682,7 +694,15 @@
     <div class="container footer-inner">
         <div class="footer-brand">
             <a href="#" class="nav__logo">
-                <span class="logo-icon">🚗</span>
+                <span class="logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                        <path d="M10 17h4V5H2v12h3"></path>
+                        <path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5"></path>
+                        <path d="M14 17h1"></path>
+                        <circle cx="7.5" cy="17.5" r="2.5"></circle>
+                        <circle cx="17.5" cy="17.5" r="2.5"></circle>
+                    </svg>
+                </span>
                 <span>ShutUP <strong>Forwarder</strong></span>
             </a>
             <p>{t.footer_tagline}</p>
@@ -730,73 +750,6 @@
         <span>{t.footer_built}</span>
     </div>
 </footer>
-
-<!-- ── CHAT DRAWER START ── -->
-{#if isChatOpen}
-    <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[9999] flex justify-end font-sans">
-        <button class="absolute inset-0 cursor-default bg-transparent border-none w-full h-full" onclick={() => isChatOpen = false} aria-label="Close chat"></button>
-        
-        <div class="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col z-10 border-l border-slate-200">
-            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <div>
-                    <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">🤖 ShutUP Agent</h2>
-                    <p class="text-xs text-slate-500">Testing Hybrid Architecture Tool-Calling</p>
-                </div>
-                <button onclick={() => isChatOpen = false} class="text-slate-400 hover:text-slate-600 text-xl font-bold p-1">&times;</button>
-            </div>
-            
-            <div class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/50">
-                {#if chat.messages.length === 0}
-                    <div class="text-center text-sm text-slate-400 my-8 px-4">
-                        Ask the agent to query the database or find the vector we pushed in our Python backend test!
-                    </div>
-                {/if}
-
-                {#each chat.messages as message}
-                    <div class="flex flex-col">
-                        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase mb-1 {message.role === 'user' ? 'self-end' : 'self-start'}">
-                            {message.role}
-                        </span>
-                        
-                        {#if message.role === 'user'}
-                            <div class="bg-blue-600 text-white px-4 py-2.5 rounded-2xl rounded-tr-none max-w-[85%] self-end shadow-sm text-sm">
-                                {#each message.parts as part}
-                                    {#if part.type === 'text'}
-                                        {part.text}
-                                    {/if}
-                                {/each}
-                            </div>
-                        {:else}
-                            <div class="bg-white border border-slate-200 text-slate-800 px-4 py-2.5 rounded-2xl rounded-tl-none max-w-[85%] self-start shadow-sm text-sm">
-                                {#each message.parts as part}
-                                    {#if part.type === 'text'}
-                                        <p class="leading-relaxed mb-2 last:mb-0">{part.text}</p>
-                                    {:else if part.type.startsWith('tool-')}
-                                        <div class="mt-2 text-[11px] bg-amber-50 border border-amber-200 text-amber-800 p-2 rounded-lg font-mono flex items-center gap-1.5">
-                                            <span class="animate-pulse">⚡</span> Tool Call: {part.type.replace('tool-', '')}
-                                        </div>
-                                    {/if}
-                                {/each}
-                            </div>
-                        {/if}
-                    </div>
-                {/each}
-            </div>
-            
-            <form onsubmit={handleChatSubmit} class="p-4 border-t border-slate-100 bg-white flex gap-2 m-0">
-                <input 
-                    bind:value={input} 
-                    placeholder="Ask about the test vector..." 
-                    class="flex-1 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-600 transition-colors m-0" 
-                />
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors shadow-sm border-none m-0">
-                    Send
-                </button>
-            </form>
-        </div>
-    </div>
-{/if}
-<!-- ── CHAT DRAWER END ── -->
 
 <style>
     /* Desktop layout for Hero */

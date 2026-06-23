@@ -30,6 +30,20 @@
         }
     });
 
+    // ── DEV TOOL: Single, simple mock data injection ──
+    function fillMockData() {
+        routeData.pickup = 'Alexanderplatz 1, 10178 Berlin, Germany';
+        routeData.delivery = 'Marienplatz 1, 80331 Munich, Germany';
+        
+        // Sets date to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        routeData.pickupDate = tomorrow.toISOString().split('T')[0];
+        
+        routeData.isRunning = 'yes';
+        routeData.extras = { roofBox: false, bikeRack: false, extraWheels: false };
+    }
+
     async function handleSubmit(event: Event) {
         event.preventDefault(); // Stops the page from refreshing
         
@@ -116,7 +130,13 @@
     <div class="container wizard-container">
         <div class="wizard-header">
             <a href="/submit/photos" class="back-link">← Back to Photos</a>
-            <div class="step-indicator">Step 3 of 5</div>
+            
+            <div class="header-right">
+                <button type="button" class="mock-btn" onclick={fillMockData} title="Fill test route data">
+                    🧪 Mock Data
+                </button>
+                <div class="step-indicator">Step 3 of 5</div>
+            </div>
         </div>
 
         <div class="wizard-card">
@@ -207,6 +227,31 @@
     
     .wizard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
     
+    /* ── NEW: Layout for the mock button ── */
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .mock-btn {
+        background: #f1f5f9;
+        border: 1px dashed #cbd5e1;
+        color: #64748b;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .mock-btn:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+        border-color: #94a3b8;
+    }
+
     .back-link { color: #64748b; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: color 0.2s ease; }
     .back-link:hover { color: #2563eb; }
     

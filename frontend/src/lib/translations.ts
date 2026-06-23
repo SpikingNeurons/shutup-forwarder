@@ -250,7 +250,7 @@ const en = {
 	quote_email_ph: 'you@example.com',
 	quote_btn: 'Get my quote →',
 	quote_submitted: '✅ Request received!',
-	quote_note: 'No account needed. Quote in under 3 hours. No spam.',
+	quote_note: 'Account needed. Quote in under 3 hours. No spam.',
 
 	// FOOTER
 	footer_tagline: 'AI-powered car transport across Europe. Fast, fair, fully tracked.',
