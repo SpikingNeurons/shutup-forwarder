@@ -216,14 +216,12 @@
             
             <!-- ── MERGED BUTTONS START ── -->
             <div class="hero__ctas flex flex-wrap items-center gap-4 mt-8">
-                <a href="/submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-blue-200 no-underline">
-                    Get an instant quote &rarr;
-                </a>
-
+                
                 {#if currentRole === 'admin'}
                     <a href="/admin" class="bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition-colors no-underline">
                         Command Center
                     </a>
+                    
                 {:else if currentRole === 'employee'}
                     <a href="/jobs" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition-colors no-underline">
                         Find Loads
@@ -231,14 +229,24 @@
                     <a href="/jobs/active" class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:opacity-90 transition-opacity flex items-center gap-2 no-underline">
                         📦 My Deliveries
                     </a>
+                    
                 {:else if isLoggedIn}
+                    <a href="/submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-blue-200 no-underline">
+                        Get an instant quote &rarr;
+                    </a>
                     <a href="/submit/tracking" class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:opacity-90 transition-opacity flex items-center gap-2 no-underline">
                         📍 Live Tracking
                     </a>
+                    
+                {:else}
+                    <!-- Completely logged out user -->
+                    <a href="/login" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-blue-200 no-underline">
+                        Login / Sign up to get a quote &rarr;
+                    </a>
                 {/if}
+
             </div>
             <!-- ── MERGED BUTTONS END ── -->
-
             <div class="hero__trust mt-10">
                 <div class="trust-item">
                     <span class="trust-stars">★★★★★</span>
@@ -628,67 +636,6 @@
     </div>
 </section>
 
-<section class="section cta-section" id="quote">
-    <div class="container cta-inner">
-        <h2 class="cta-title">{t.cta_title}</h2>
-        <p class="cta-sub">{t.cta_sub}</p>
-        <div class="quote-form">
-            <div class="quote-row">
-                <div class="quote-field">
-                    <label for="pickup">{t.quote_pickup_label}</label>
-                    <input
-                        id="pickup"
-                        type="text"
-                        placeholder={t.quote_pickup_ph}
-                        bind:value={pickupAddr}
-                        style={!quoteFields.pickup ? 'border-color: #f87171' : ''}
-                    />
-                </div>
-                <div class="quote-arrow">→</div>
-                <div class="quote-field">
-                    <label for="delivery">{t.quote_delivery_label}</label>
-                    <input
-                        id="delivery"
-                        type="text"
-                        placeholder={t.quote_delivery_ph}
-                        bind:value={deliveryAddr}
-                        style={!quoteFields.delivery ? 'border-color: #f87171' : ''}
-                    />
-                </div>
-            </div>
-            <div class="quote-row quote-row--bottom">
-                <div class="quote-field">
-                    <label for="car">{t.quote_car_label}</label>
-                    <input
-                        id="car"
-                        type="text"
-                        placeholder={t.quote_car_ph}
-                        bind:value={carModel}
-                        style={!quoteFields.car ? 'border-color: #f87171' : ''}
-                    />
-                </div>
-                <div class="quote-field">
-                    <label for="email">{t.quote_email_label}</label>
-                    <input
-                        id="email"
-                        type="email"
-                        placeholder={t.quote_email_ph}
-                        bind:value={email}
-                        style={!quoteFields.email ? 'border-color: #f87171' : ''}
-                    />
-                </div>
-                <button
-                    class="btn btn--primary btn--lg quote-submit"
-                    disabled={quoteSubmitted}
-                    onclick={handleQuoteSubmit}
-                >
-                    {quoteSubmitted ? t.quote_submitted : t.quote_btn}
-                </button>
-            </div>
-            <p class="quote-note">{t.quote_note}</p>
-        </div>
-    </div>
-</section>
 
 <footer class="footer">
     <div class="container footer-inner">
