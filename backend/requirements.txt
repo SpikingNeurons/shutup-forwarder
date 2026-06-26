@@ -4,3 +4,4 @@ pydantic-ai
 python-dotenv
 httpx
 prisma
+groq
