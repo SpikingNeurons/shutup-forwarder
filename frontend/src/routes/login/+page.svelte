@@ -3,19 +3,17 @@
 </script>
 
 <div class="login-wrapper">
-    <!-- Exit button -->
     <a href="/" class="back-link">
         &larr; Back to Dashboard
     </a>
 
     <div class="login-container">
-        <!-- Subtle branding to tie it into the app -->
         <div class="brand-header">
             <span class="logo-icon">🚗</span>
             <h1>ShutUP <strong>Forwarder</strong></h1>
         </div>
         
-        <SignIn forceRedirectUrl="/auth-sync" />
+        <SignIn forceRedirectUrl="/auth-sync" signUpUrl="/signup" />
     </div>
 </div>
 

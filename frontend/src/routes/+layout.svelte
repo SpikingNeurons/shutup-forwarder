@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ClerkProvider } from 'svelte-clerk';
+    import { ClerkProvider, UserButton } from 'svelte-clerk';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
     import { page } from '$app/stores';
@@ -23,13 +23,20 @@
         const currentPath = $page.url.pathname;
 
         // PUBLIC ROUTES 
-        if (!currentRole && !currentPath.startsWith('/login') && currentPath !== '/' && !currentPath.startsWith('/auth-sync')) {
+        const isPublicRoute = currentPath === '/' || 
+                              currentPath.startsWith('/login') || 
+                              currentPath.startsWith('/signup') || 
+                              currentPath.startsWith('/driver-apply') || 
+                              currentPath.startsWith('/auth-sync');
+
+        if (!currentRole && !isPublicRoute) {
             goto('/login');
         } 
-        // EMPLOYEE SECURITY
-        else if (currentRole === 'employee' && currentPath.startsWith('/admin')) {
-            goto('/jobs');
+        // SECURITY: Keep drivers out of admin pages
+        else if (currentRole === 'FORWARDER' && currentPath.startsWith('/admin')) {
+            goto('/');
         } 
+        
     });
 
     // 3. CLEAN SVELTE 5 DERIVED VARIABLES
@@ -42,7 +49,7 @@
 
         if (currentRole === 'admin') {
             return [];
-        } else if (currentRole === 'employee') {
+        } else if (currentRole === 'FORWARDER') {
             return [
                 { name: 'Available Loads', href: '/jobs' },
                 { name: 'My Deliveries', href: '/jobs/active' }
@@ -57,6 +64,7 @@
 
     let displayRole = $derived(() => {
         if (isAdminPath) return 'ADMIN';
+        if (currentRole === 'FORWARDER') return 'DRIVER'; 
         return currentRole || 'Guest';
     });
 </script>
@@ -64,18 +72,15 @@
 <ClerkProvider>
     {#if !isChecking}
         
-        <!-- SMART ROUTING: Branch the layout based on the URL -->
         {#if $page.url.pathname === '/'}
             
-            <!-- 1. LANDING PAGE LAYOUT: Zero wrappers, edge-to-edge -->
             {@render children()}
             
         {:else}
             
-            <!-- 2. DASHBOARD LAYOUT: Tailwind backgrounds, limits, and the Dark Blue Header -->
             <div class="min-h-screen bg-slate-50 flex flex-col font-sans">
                 
-                {#if !$page.url.pathname.startsWith('/login') && !$page.url.pathname.startsWith('/auth-sync')}
+                {#if !$page.url.pathname.startsWith('/login') && !$page.url.pathname.startsWith('/signup') && !$page.url.pathname.startsWith('/driver-apply') && !$page.url.pathname.startsWith('/auth-sync')}
                     <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
                         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <div class="flex items-center justify-between h-16">
@@ -104,12 +109,17 @@
                                             {displayRole()}
                                         </span>
         
+                                        <!-- UPDATED: Points directly to the central dashboard hub -->
                                         <a 
                                             href="/" 
                                             class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-sm font-semibold py-2 px-4 rounded-md border border-slate-700 transition-colors no-underline"
                                         >
                                             Dashboard
                                         </a>
+
+                                        <div class="bg-white rounded-full flex items-center justify-center p-0.5 ml-2">
+                                            <UserButton />
+                                        </div>
 
                                     {:else}
                                         <a 

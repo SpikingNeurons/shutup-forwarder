@@ -114,3 +114,25 @@ model Bid {
   status          String   @default("PENDING_AI_REVIEW") 
   createdAt       DateTime @default(now())
 }
+
+model DriverRequest {
+  id              String   @id @default(uuid())
+  firstName       String
+  lastName        String
+  email           String   @unique
+  phone           String
+  password        String   // <--- ADD THIS LINE
+  
+  // Optional Business Details
+  companyName     String?
+  vatNumber       String?
+  
+  // Equipment & Compliance
+  licenseClass    String   
+  trailerType     String   
+  hasWinch        Boolean  @default(false) 
+  hasCode95       Boolean  @default(false)
+  
+  status          String   @default("PENDING") 
+  createdAt       DateTime @default(now())
+}

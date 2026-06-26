@@ -240,9 +240,17 @@
                     
                 {:else}
                     <!-- Completely logged out user -->
-                    <a href="/login" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-blue-200 no-underline">
-                        Login / Sign up to get a quote &rarr;
-                    </a>
+                    <div class="flex items-center gap-3">
+                        <a href="/login" class="bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold py-3 px-6 rounded-lg transition-colors no-underline">
+                            Login
+                        </a>
+                        <a href="/signup" class="bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold py-3 px-6 rounded-lg transition-colors no-underline">
+                            Sign Up
+                        </a>
+                        <a href="/driver-apply" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-lg shadow-blue-200 no-underline">
+                            Apply as Driver
+                        </a>
+                    </div>
                 {/if}
 
             </div>
