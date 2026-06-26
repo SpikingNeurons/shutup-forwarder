@@ -25,7 +25,7 @@
         isLoading = true;
         try {
             const res = await fetch(
-                "http://127.0.0.1:8000/api/driver-requests",
+                "https://shutup-forwarder-production.up.railway.app/api/driver-requests",
             );
             if (res.ok) {
                 const json = await res.json();
@@ -65,7 +65,7 @@
 
         try {
             const response = await fetch(
-                `http://127.0.0.1:8000/api/driver-requests/${id}/approve`,
+                `https://shutup-forwarder-production.up.railway.app/api/driver-requests/${id}/approve`,
                 {
                     method: "POST",
                 },
@@ -101,7 +101,7 @@
 
         try {
             const response = await fetch(
-                `http://127.0.0.1:8000/api/driver-requests/${id}/reject`,
+                `https://shutup-forwarder-production.up.railway.app/api/driver-requests/${id}/reject`,
                 {
                     method: "POST",
                 },

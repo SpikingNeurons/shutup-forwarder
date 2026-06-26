@@ -66,7 +66,9 @@
     async function fetchJobs() {
         isLoading = true;
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/jobs");
+            const response = await fetch(
+                "https://shutup-forwarder-production.up.railway.app/api/jobs",
+            );
             if (response.ok) {
                 const result = await response.json();
                 dbJobs = result.data;
@@ -112,7 +114,7 @@
 
         try {
             const response = await fetch(
-                `http://127.0.0.1:8000/api/jobs/${id}`,
+                `https://shutup-forwarder-production.up.railway.app/api/jobs/${id}`,
                 {
                     method: "DELETE",
                 },
