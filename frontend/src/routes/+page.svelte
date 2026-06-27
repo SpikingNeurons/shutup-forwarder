@@ -222,7 +222,7 @@
                         Command Center
                     </a>
                     
-                {:else if currentRole === 'employee'}
+                {:else if currentRole === 'employee' || currentRole === 'FORWARDER'}
                     <a href="/jobs" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition-colors no-underline">
                         Find Loads
                     </a>

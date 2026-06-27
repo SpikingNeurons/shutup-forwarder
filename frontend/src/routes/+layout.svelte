@@ -33,7 +33,7 @@
             goto('/login');
         } 
         // SECURITY: Keep drivers out of admin pages
-        else if (currentRole === 'FORWARDER' && currentPath.startsWith('/admin')) {
+        else if ((currentRole === 'FORWARDER' || currentRole === 'employee') && currentPath.startsWith('/admin')) {
             goto('/');
         } 
         
@@ -49,7 +49,7 @@
 
         if (currentRole === 'admin') {
             return [];
-        } else if (currentRole === 'FORWARDER') {
+        } else if (currentRole === 'FORWARDER' || currentRole === 'employee') {
             return [
                 { name: 'Available Loads', href: '/jobs' },
                 { name: 'My Deliveries', href: '/jobs/active' }
@@ -64,7 +64,7 @@
 
     let displayRole = $derived(() => {
         if (isAdminPath) return 'ADMIN';
-        if (currentRole === 'FORWARDER') return 'DRIVER'; 
+        if (currentRole === 'FORWARDER' || currentRole === 'employee') return 'DRIVER'; 
         return currentRole || 'Guest';
     });
 </script>
