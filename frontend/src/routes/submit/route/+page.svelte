@@ -1,8 +1,9 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
+    import { API_BASE_URL } from "$lib/api.js";
 
-    let routeData = {
+    let routeData = $state({
         pickup: "",
         pickupDate: "",
         delivery: "",
@@ -12,9 +13,27 @@
             bikeRack: false,
             extraWheels: false,
         },
-    };
+    });
 
-    let isSubmitting = false;
+    let isSubmitting = $state(false);
+
+    let estimatedCost = $derived(() => {
+        if (!routeData.pickup || !routeData.delivery) return null;
+        let sum = 0;
+        for (let i = 0; i < routeData.pickup.length; i++) sum += routeData.pickup.charCodeAt(i);
+        for (let i = 0; i < routeData.delivery.length; i++) sum += routeData.delivery.charCodeAt(i);
+        const basePrice = 150;
+        const variablePrice = (sum % 350) + 100;
+        return basePrice + variablePrice;
+    });
+    
+    let estimatedDistance = $derived(() => {
+        if (!routeData.pickup || !routeData.delivery) return "Unknown";
+        let sum = 0;
+        for (let i = 0; i < routeData.pickup.length; i++) sum += routeData.pickup.charCodeAt(i);
+        for (let i = 0; i < routeData.delivery.length; i++) sum += routeData.delivery.charCodeAt(i);
+        return ((sum % 700) + 120).toString() + " km";
+    });
 
     onMount(() => {
         // Pull the initial addresses if they came from the homepage form
@@ -30,21 +49,29 @@
         }
     });
 
-    // ── DEV TOOL: Single, simple mock data injection ──
+    // ── DEV TOOL: Randomized mock data injection ──
+    const routes = [
+        { pickup: "Alexanderplatz 1, 10178 Berlin, Germany", delivery: "Marienplatz 1, 80331 Munich, Germany" },
+        { pickup: "Herengracht 12, 1015 BZ Amsterdam, Netherlands", delivery: "Maximilianstr. 5, 80539 Munich, Germany" },
+        { pickup: "Champ de Mars, 75007 Paris, France", delivery: "Piazza del Duomo, 20121 Milan, Italy" },
+        { pickup: "Dam Square, 1012 JS Amsterdam, Netherlands", delivery: "Carrer de Mallorca, 401, 08013 Barcelona, Spain" },
+        { pickup: "Rotterdam Port, 3011 TA Rotterdam, Netherlands", delivery: "Stuttgart Central Station, 70173 Stuttgart, Germany" }
+    ];
     function fillMockData() {
-        routeData.pickup = "Alexanderplatz 1, 10178 Berlin, Germany";
-        routeData.delivery = "Marienplatz 1, 80331 Munich, Germany";
+        const r = routes[Math.floor(Math.random() * routes.length)];
+        routeData.pickup = r.pickup;
+        routeData.delivery = r.delivery;
 
-        // Sets date to tomorrow
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        routeData.pickupDate = tomorrow.toISOString().split("T")[0];
+        // Random date between 1 and 7 days from now
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + Math.floor(Math.random() * 7) + 1);
+        routeData.pickupDate = futureDate.toISOString().split("T")[0];
 
-        routeData.isRunning = "yes";
+        routeData.isRunning = Math.random() > 0.2 ? "yes" : "no";
         routeData.extras = {
-            roofBox: false,
-            bikeRack: false,
-            extraWheels: false,
+            roofBox: Math.random() > 0.7,
+            bikeRack: Math.random() > 0.7,
+            extraWheels: Math.random() > 0.7,
         };
     }
 
@@ -89,15 +116,19 @@
                 route: {
                     pickup: routeData.pickup,
                     delivery: routeData.delivery,
-                    distance: "Unknown", // Placeholder until distance calculation is added
+                    distance: estimatedDistance(),
                 },
+                targetPrice: estimatedCost(),
+                customerId: (typeof window !== 'undefined' && (window as any).Clerk?.user?.id) || null,
+                customerEmail: (typeof window !== 'undefined' && (window as any).Clerk?.user?.emailAddresses?.[0]?.emailAddress) || null,
+                customerName: (typeof window !== 'undefined' && (window as any).Clerk?.user?.fullName) || null,
             };
 
             console.log("Sending to AI Dispatch:", payload);
 
             // 3. Send to FastAPI backend
             const response = await fetch(
-                "https://shutup-forwarder-production.up.railway.app/api/submit-job",
+                `${API_BASE_URL}/api/submit-job`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -195,6 +226,20 @@
                         required
                     />
                 </div>
+
+                {#if estimatedCost()}
+                    <div class="estimate-card animate-fade-in">
+                        <div class="estimate-header">
+                            <span class="estimate-icon">🤖</span>
+                            <h3>Intake AI Cost Estimate</h3>
+                        </div>
+                        <div class="estimate-price">€{estimatedCost()}</div>
+                        <div class="estimate-subtext">Estimated Distance: {estimatedDistance()}</div>
+                        <p class="estimate-note">
+                            This is the baseline target budget calculated for this route. Drivers will place their bids relative to this target.
+                        </p>
+                    </div>
+                {/if}
 
                 <hr class="divider" />
 
@@ -530,5 +575,52 @@
         .wizard-section {
             padding: 30px 15px;
         }
+    }
+
+    /* Intake AI Estimate Card styles */
+    .estimate-card {
+        background: linear-gradient(135deg, rgba(239, 246, 255, 0.95) 0%, rgba(219, 234, 254, 0.95) 100%);
+        border: 1px solid #bfdbfe;
+        border-radius: 16px;
+        padding: 24px;
+        margin: 16px 0;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.05);
+        font-family: inherit;
+        text-align: left;
+    }
+    .estimate-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+    .estimate-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1e3a8a;
+    }
+    .estimate-icon {
+        font-size: 1.25rem;
+    }
+    .estimate-price {
+        font-size: 2.25rem;
+        font-weight: 850;
+        color: #1e40af;
+        margin-bottom: 4px;
+        letter-spacing: -0.03em;
+    }
+    .estimate-subtext {
+        font-size: 0.85rem;
+        color: #4b5563;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+    .estimate-note {
+        font-size: 0.8rem;
+        color: #1e3a8a;
+        opacity: 0.8;
+        line-height: 1.4;
+        margin: 0;
     }
 </style>

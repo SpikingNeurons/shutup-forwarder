@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { API_BASE_URL } from "$lib/api.js";
 
     interface Job {
         id: string;
@@ -67,7 +68,7 @@
         isLoading = true;
         try {
             const response = await fetch(
-                "https://shutup-forwarder-production.up.railway.app/api/jobs",
+                `${API_BASE_URL}/api/jobs`,
             );
             if (response.ok) {
                 const result = await response.json();
@@ -114,7 +115,7 @@
 
         try {
             const response = await fetch(
-                `https://shutup-forwarder-production.up.railway.app/api/jobs/${id}`,
+                `${API_BASE_URL}/api/jobs/${id}`,
                 {
                     method: "DELETE",
                 },

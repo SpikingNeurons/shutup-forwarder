@@ -1,19 +1,19 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import { goto } from '$app/navigation';
+    import { onMount } from "svelte";
+    import { goto } from "$app/navigation";
 
     let vehicle = {
-        vin: '',
-        make: '',
-        model: '',
-        year: '',
-        fuelType: '',
-        mileage: ''
+        vin: "",
+        make: "",
+        model: "",
+        year: "",
+        fuelType: "",
+        mileage: "",
     };
 
     onMount(() => {
         // Pull the initial data if they came from the homepage form
-        const savedQuote = sessionStorage.getItem('shutup-initial-quote');
+        const savedQuote = sessionStorage.getItem("shutup-initial-quote");
         if (savedQuote) {
             try {
                 const data = JSON.parse(savedQuote);
@@ -26,22 +26,65 @@
         }
     });
 
-    // ── DEV TOOL: Single, simple mock data injection ──
+    // ── DEV TOOL: Randomized mock data injection ──
+    const vehicles = [
+        {
+            vin: "WBA3A5C50CF256551",
+            make: "BMW",
+            model: "3 Series",
+            year: "2019",
+            fuelType: "Diesel",
+            mileage: "87000",
+        },
+        {
+            vin: "WVWZZZCDZNW123456",
+            make: "Volkswagen",
+            model: "Golf 8",
+            year: "2022",
+            fuelType: "Petrol",
+            mileage: "45000",
+        },
+        {
+            vin: "SALWR2VF8HA123456",
+            make: "Land Rover",
+            model: "Defender",
+            year: "2021",
+            fuelType: "Diesel",
+            mileage: "32000",
+        },
+        {
+            vin: "WUAZZZF84HA654321",
+            make: "Audi",
+            model: "R8 V10",
+            year: "2020",
+            fuelType: "Petrol",
+            mileage: "15000",
+        },
+        {
+            vin: "WP0ZZZ99ZLS123456",
+            make: "Porsche",
+            model: "911 Carrera",
+            year: "2023",
+            fuelType: "Petrol",
+            mileage: "8000",
+        },
+    ];
     function fillMockData() {
-        vehicle.vin = 'WVWZZZCDZNW123456';
-        vehicle.make = 'Volkswagen';
-        vehicle.model = 'Golf 8';
-        vehicle.year = '2022';
-        vehicle.fuelType = 'Petrol';
-        vehicle.mileage = '45000';
+        const v = vehicles[Math.floor(Math.random() * vehicles.length)];
+        vehicle.vin = v.vin;
+        vehicle.make = v.make;
+        vehicle.model = v.model;
+        vehicle.year = v.year;
+        vehicle.fuelType = v.fuelType;
+        vehicle.mileage = v.mileage;
     }
 
     function handleNext(event: Event) {
         event.preventDefault();
-        
+
         console.log("Proceeding to Step 2 with:", vehicle);
-        sessionStorage.setItem('shutup-step1-vehicle', JSON.stringify(vehicle));
-        goto('/submit/photos');
+        sessionStorage.setItem("shutup-step1-vehicle", JSON.stringify(vehicle));
+        goto("/submit/photos");
     }
 </script>
 
@@ -53,9 +96,14 @@
     <div class="container wizard-container">
         <div class="wizard-header">
             <a href="/" class="back-link">← Back to home</a>
-            
+
             <div class="header-right">
-                <button type="button" class="mock-btn" onclick={fillMockData} title="Fill test vehicle data">
+                <button
+                    type="button"
+                    class="mock-btn"
+                    onclick={fillMockData}
+                    title="Fill test vehicle data"
+                >
                     🧪 Mock Data
                 </button>
                 <div class="step-indicator">Step 1 of 5</div>
@@ -64,38 +112,72 @@
 
         <div class="wizard-card">
             <h1 class="wizard-title">Vehicle Identity</h1>
-            <p class="wizard-sub">Tell us the exact details of the vehicle you need to move.</p>
+            <p class="wizard-sub">
+                Tell us the exact details of the vehicle you need to move.
+            </p>
 
             <form onsubmit={handleNext} class="custom-form">
-                
                 <div class="form-group">
                     <label for="vin">Chassis / VIN Number</label>
                     <div class="input-wrapper">
-                        <input type="text" id="vin" bind:value={vehicle.vin} placeholder="e.g. WBA3A5C50CF256551" required />
-                        <button type="button" class="scan-btn" title="Scan with camera">📷</button>
+                        <input
+                            type="text"
+                            id="vin"
+                            bind:value={vehicle.vin}
+                            placeholder="e.g. WBA3A5C50CF256551"
+                            required
+                        />
+                        <button
+                            type="button"
+                            class="scan-btn"
+                            title="Scan with camera">📷</button
+                        >
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="make">Make</label>
-                        <input type="text" id="make" bind:value={vehicle.make} placeholder="e.g. BMW" required />
+                        <input
+                            type="text"
+                            id="make"
+                            bind:value={vehicle.make}
+                            placeholder="e.g. BMW"
+                            required
+                        />
                     </div>
                     <div class="form-group half">
                         <label for="model">Model</label>
-                        <input type="text" id="model" bind:value={vehicle.model} placeholder="e.g. 3 Series" required />
+                        <input
+                            type="text"
+                            id="model"
+                            bind:value={vehicle.model}
+                            placeholder="e.g. 3 Series"
+                            required
+                        />
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="year">Year</label>
-                        <input type="number" id="year" bind:value={vehicle.year} placeholder="e.g. 2019" required />
+                        <input
+                            type="number"
+                            id="year"
+                            bind:value={vehicle.year}
+                            placeholder="e.g. 2019"
+                            required
+                        />
                     </div>
                     <div class="form-group half">
                         <label for="fuel">Fuel Type</label>
-                        <select id="fuel" bind:value={vehicle.fuelType} required>
-                            <option value="" disabled selected>Select...</option>
+                        <select
+                            id="fuel"
+                            bind:value={vehicle.fuelType}
+                            required
+                        >
+                            <option value="" disabled selected>Select...</option
+                            >
                             <option value="Petrol">Petrol</option>
                             <option value="Diesel">Diesel</option>
                             <option value="Electric">Electric</option>
@@ -106,10 +188,18 @@
 
                 <div class="form-group">
                     <label for="mileage">Mileage (km)</label>
-                    <input type="number" id="mileage" bind:value={vehicle.mileage} placeholder="e.g. 87000" required />
+                    <input
+                        type="number"
+                        id="mileage"
+                        bind:value={vehicle.mileage}
+                        placeholder="e.g. 87000"
+                        required
+                    />
                 </div>
 
-                <button type="submit" class="submit-btn">Next: Upload Photos →</button>
+                <button type="submit" class="submit-btn"
+                    >Next: Upload Photos →</button
+                >
             </form>
         </div>
     </div>
@@ -120,9 +210,9 @@
     .wizard-section {
         min-height: 100vh;
         background: #f8fafc; /* slate-50 */
-        color: #0f172a;      /* slate-900 */
+        color: #0f172a; /* slate-900 */
         padding: 60px 20px;
-        font-family: 'Inter', system-ui, sans-serif;
+        font-family: "Inter", system-ui, sans-serif;
     }
 
     .wizard-container {
@@ -182,7 +272,7 @@
         font-weight: 700;
         letter-spacing: 0.5px;
         color: #475569;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
 
     .wizard-card {
@@ -190,7 +280,9 @@
         border: 1px solid #cbd5e1;
         border-radius: 24px;
         padding: 48px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        box-shadow:
+            0 20px 25px -5px rgba(0, 0, 0, 0.05),
+            0 8px 10px -6px rgba(0, 0, 0, 0.01);
     }
 
     .wizard-title {
@@ -198,7 +290,7 @@
         font-weight: 800;
         margin: 0 0 12px 0;
         color: #0f172a;
-        letter-spacing: -0.025em; 
+        letter-spacing: -0.025em;
     }
 
     .wizard-sub {
@@ -237,7 +329,8 @@
         color: #475569;
     }
 
-    input, select {
+    input,
+    select {
         background: #f8fafc;
         border: 1px solid #cbd5e1;
         border-radius: 12px;
@@ -251,7 +344,8 @@
         color: #94a3b8;
     }
 
-    input:focus, select:focus {
+    input:focus,
+    select:focus {
         outline: none;
         border-color: #3b82f6;
         box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
@@ -285,7 +379,7 @@
         cursor: pointer;
         transition: all 0.2s ease;
         font-size: 1.1rem;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
 
     .scan-btn:hover {
@@ -304,7 +398,9 @@
         border: none;
         font-weight: 600;
         cursor: pointer;
-        transition: transform 0.1s ease, box-shadow 0.2s ease;
+        transition:
+            transform 0.1s ease,
+            box-shadow 0.2s ease;
     }
 
     .submit-btn:hover {

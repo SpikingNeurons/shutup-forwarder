@@ -3,11 +3,11 @@
     import { goto } from "$app/navigation";
 
     // State to hold our retrieved data
-    let jobData = {
+    let jobData = $state({
         make: "Unknown Vehicle",
         pickup: "Origin",
         delivery: "Destination",
-    };
+    });
 
     // State for our fake AI loading sequence
     let aiSteps = $state({
@@ -21,14 +21,10 @@
     onMount(() => {
         // 1. Pull data from sessionStorage
         let step1: any = {};
-        let step2: any = {};
         let step3: any = {};
         try {
             step1 = JSON.parse(
                 sessionStorage.getItem("shutup-step1-vehicle") || "{}",
-            );
-            step2 = JSON.parse(
-                sessionStorage.getItem("shutup-step2-photos") || "{}",
             );
             step3 = JSON.parse(
                 sessionStorage.getItem("shutup-step3-route") || "{}",
@@ -42,69 +38,30 @@
             console.error("Error reading session data:", e);
         }
 
-        // --- THE FAKE AI SEQUENCE + REAL API CALL ---
+        // --- THE FAKE AI SEQUENCE ---
         setTimeout(() => (aiSteps.details = true), 1000);
-        setTimeout(() => (aiSteps.photos = true), 2500);
-        setTimeout(() => (aiSteps.route = true), 4000);
+        setTimeout(() => (aiSteps.photos = true), 2200);
+        setTimeout(() => (aiSteps.route = true), 3400);
 
-        setTimeout(async () => {
+        setTimeout(() => {
             aiSteps.drivers = true;
 
-            // Simulate bids coming in while we wait for the backend
+            // Simulate bids coming in visually
             const bidInterval = setInterval(() => {
-                if (aiSteps.bids < 3) aiSteps.bids += 1;
-            }, 800);
-
-            try {
-                // ACTUAL BACKEND CONNECTION!
-                const response = await fetch(
-                    "https://shutup-forwarder-production.up.railway.app/api/submit-job",
-                    {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            vehicle: step1,
-                            photos: step2,
-                            route: step3,
-                        }),
-                    },
-                );
-
-                const result = await response.json();
-                console.log("Backend response:", result); // Check your browser console to see this!
-
-                clearInterval(bidInterval);
-                aiSteps.bids = 3; // Max out the bids visually
-
-                if (response.ok) {
-                    // BULLETPROOF ID GRABBER:
-                    // This checks the different ways FastAPI might have returned the ID
-                    const newJobId =
-                        result.job_id ||
-                        result.id ||
-                        (result.data && result.data.id);
-
-                    console.log("Saving this ID to session storage:", newJobId);
-
-                    // Save the real job ID so the Tracking page can fetch it!
-                    sessionStorage.setItem("shutup-live-job-id", newJobId);
-
-                    // AI found a driver & backend saved it! Move to final tracking step
-                    setTimeout(() => goto("/submit/tracking"), 1500);
+                if (aiSteps.bids < 3) {
+                    aiSteps.bids += 1;
                 } else {
-                    alert(
-                        "Backend error: " + (result.detail || "Unknown error"),
-                    );
+                    clearInterval(bidInterval);
                 }
-            } catch (error) {
-                // ... your existing catch block ...
+            }, 600);
+
+            // Wait a bit after bids finish, then move to final tracking step
+            setTimeout(() => {
                 clearInterval(bidInterval);
-                console.error("Failed to reach backend:", error);
-                alert(
-                    "Could not connect to the Python backend. Is it running on port 8000?",
-                );
-            }
-        }, 5500);
+                aiSteps.bids = 3;
+                goto("/submit/tracking");
+            }, 2500);
+        }, 4600);
     });
 </script>
 

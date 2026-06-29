@@ -83,15 +83,6 @@
                 Assign administrative roles and handle live system access credentials.
             </p>
         </div>
-        
-        <div class="flex items-center gap-3">
-            <a 
-                href="/admin" 
-                class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-sm transition-all text-xs no-underline border border-transparent"
-            >
-                ← Back to Command Center
-            </a>
-        </div>
     </div>
 
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">

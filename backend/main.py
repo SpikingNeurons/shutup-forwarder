@@ -42,6 +42,10 @@ class JobSubmission(BaseModel):
     vehicle: Dict[str, Any]
     photos: Dict[str, Any]
     route: Dict[str, Any]
+    targetPrice: float | None = None
+    customerId: str | None = None
+    customerEmail: str | None = None
+    customerName: str | None = None
 
 class BidSubmission(BaseModel):
     driverName: str
@@ -62,8 +66,10 @@ class DriverApplication(BaseModel):
     hasCode95: bool
 
 class AuthSyncRequest(BaseModel):
+    id: str
     email: str
-    name: str
+    name: str | None = None
+    role: str
 
 
 # --- API ENDPOINTS ---
@@ -117,6 +123,29 @@ async def submit_job(submission: JobSubmission):
     
     ai_evaluation = await evaluate_job(job_data)
     
+    cust_id = job_data.get("customerId")
+    if cust_id:
+        user_exists = await db.user.find_unique(where={"id": cust_id})
+        if not user_exists:
+            email_to_use = job_data.get("customerEmail") or f"user_{cust_id}@placeholder.com"
+            name_to_use = job_data.get("customerName") or "Customer"
+            try:
+                # Check if email is already taken in user db
+                existing_by_email = await db.user.find_unique(where={"email": email_to_use})
+                if existing_by_email:
+                    email_to_use = f"user_{cust_id}_{existing_by_email.id[:4]}@placeholder.com"
+                
+                await db.user.create(
+                    data={
+                        "id": cust_id,
+                        "email": email_to_use,
+                        "name": name_to_use,
+                        "role": "CUSTOMER"
+                    }
+                )
+            except Exception as e:
+                print(f"Error creating user record: {e}")
+                
     saved_job = await db.job.create(
         data={
             "make": job_data["vehicle"].get("make", "Unknown"),
@@ -130,6 +159,8 @@ async def submit_job(submission: JobSubmission):
             "aiIsValid": ai_evaluation.is_valid,
             "aiReasoning": ai_evaluation.reasoning,
             "aiComplexity": ai_evaluation.estimated_complexity,
+            "targetPrice": job_data.get("targetPrice") or 500.0,
+            "customerId": cust_id,
             "status": "Reviewing" 
         }
     )
@@ -145,18 +176,11 @@ async def submit_job(submission: JobSubmission):
 @app.get("/api/jobs")
 async def get_all_jobs():
     raw_jobs = await db.job.find_many(order={"createdAt": "desc"})
-    seen_identifiers = set()
-    unique_jobs = []
-    for job in raw_jobs:
-        footprint = (job.pickup, job.delivery, job.model)
-        if footprint not in seen_identifiers:
-            seen_identifiers.add(footprint)
-            unique_jobs.append(job)
-    return {"status": "success", "count": len(unique_jobs), "data": unique_jobs}
+    return {"status": "success", "count": len(raw_jobs), "data": raw_jobs}
 
 @app.get("/api/jobs/{job_id}")
 async def get_single_job(job_id: str):
-    job = await db.job.find_unique(where={"id": job_id}, include={"bids": True})
+    job = await db.job.find_unique(where={"id": job_id}, include={"bids": True, "forwarder": True, "customer": True})
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     return {"status": "success", "data": job}
@@ -178,9 +202,16 @@ async def accept_job(job_id: str):
         raise HTTPException(status_code=404, detail="Job not found")
 
 @app.patch("/api/jobs/{job_id}/complete")
-async def complete_job(job_id: str):
+async def complete_job(job_id: str, damage: str = "no"):
     try:
-        updated_job = await db.job.update(where={"id": job_id}, data={"status": "Completed"})
+        damage_report = "⚠️ AI Flagged: Damage Detected New scratch detected on Left Side." if damage == "yes" else "✅ AI Cleared: No Damage Detected Vehicle matches original condition. Job complete."
+        updated_job = await db.job.update(
+            where={"id": job_id}, 
+            data={
+                "status": "Completed",
+                "aiReasoning": damage_report
+            }
+        )
         return {"message": "Job marked as completed", "data": updated_job}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -217,10 +248,21 @@ async def submit_bid(job_id: str, submission: BidSubmission):
 @app.patch("/api/jobs/{job_id}/bids/{bid_id}/accept")
 async def accept_counter_offer(job_id: str, bid_id: str):
     try:
+        bid = await db.bid.find_unique(where={"id": bid_id})
+        if not bid:
+            raise HTTPException(status_code=404, detail="Bid not found")
+            
         await db.bid.update(where={"id": bid_id}, data={"status": "ACCEPTED"})
-        updated_job = await db.job.update(where={"id": job_id}, data={"status": "Pending Pickup"})
+        updated_job = await db.job.update(
+            where={"id": job_id}, 
+            data={
+                "status": "Pending Pickup",
+                "forwarderId": bid.forwarderId
+            }
+        )
         return {"status": "success", "job": updated_job}
     except Exception as e:
+        print(f"Error in accept_counter_offer: {e}")
         raise HTTPException(status_code=500, detail="Failed to accept offer")
 
 # --- ADMIN ACTIONS: APPROVE / REJECT ---
@@ -293,4 +335,76 @@ async def reject_driver(id: str):
 
     await db.driverrequest.delete(where={"id": id})
     return {"status": "success", "message": "Driver request rejected."}
+
+
+@app.post("/api/auth-sync")
+async def auth_sync(req: AuthSyncRequest):
+    role_enum = "CUSTOMER"
+    if req.role.upper() == "ADMIN":
+        role_enum = "ADMIN"
+    elif req.role.upper() == "FORWARDER" or req.role.lower() == "employee":
+        role_enum = "FORWARDER"
+        
+    try:
+        existing_by_email = await db.user.find_unique(where={"email": req.email})
+        if existing_by_email and existing_by_email.id != req.id:
+            email_to_use = f"sync_{req.id[:6]}_{req.email}"
+        else:
+            email_to_use = req.email
+
+        user = await db.user.upsert(
+            where={"id": req.id},
+            data={
+                "create": {
+                    "id": req.id,
+                    "email": email_to_use,
+                    "name": req.name,
+                    "role": role_enum
+                },
+                "update": {
+                    "email": email_to_use,
+                    "name": req.name,
+                    "role": role_enum
+                }
+            }
+        )
+        return {"status": "success", "data": user}
+    except Exception as e:
+        print(f"Error in auth_sync: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/trips")
+async def get_trips(customerId: str | None = None, forwarderId: str | None = None, role: str | None = None):
+    where_clause = {}
+    if role == "admin":
+        pass
+    elif customerId:
+        where_clause["customerId"] = customerId
+    elif forwarderId:
+        where_clause["forwarderId"] = forwarderId
+        
+    try:
+        trips = await db.job.find_many(
+            where=where_clause,
+            order={"createdAt": "desc"},
+            include={"bids": True, "forwarder": True, "customer": True}
+        )
+        return {"status": "success", "data": trips}
+    except Exception as e:
+        print(f"Error in get_trips: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.patch("/api/jobs/{job_id}/cancel")
+async def cancel_job(job_id: str):
+    try:
+        updated_job = await db.job.update(
+            where={"id": job_id},
+            data={"status": "Canceled"}
+        )
+        return {"status": "success", "data": updated_job}
+    except Exception as e:
+        print(f"Error in cancel_job: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 

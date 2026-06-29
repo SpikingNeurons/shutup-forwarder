@@ -1,8 +1,9 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { API_BASE_URL } from '$lib/api.js';
 
     onMount(() => {
-        const checkUser = setInterval(() => {
+        const checkUser = setInterval(async () => {
             if (typeof window !== 'undefined' && (window as any).Clerk) {
                 clearInterval(checkUser); 
                 
@@ -15,6 +16,21 @@
 
                 // Grab the role from Clerk
                 const role = user.publicMetadata?.role || user.unsafeMetadata?.role || 'client';
+                
+                try {
+                    await fetch(`${API_BASE_URL}/api/auth-sync`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            id: user.id,
+                            email: user.emailAddresses[0]?.emailAddress,
+                            name: user.fullName || user.username || "Customer",
+                            role: role
+                        })
+                    });
+                } catch (e) {
+                    console.error("Backend auth sync failed:", e);
+                }
                 
                 // Write it to Svelte's memory so the root page knows what buttons to show
                 localStorage.setItem('userRole', role);

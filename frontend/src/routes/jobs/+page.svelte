@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
+    import { API_BASE_URL } from "$lib/api.js";
 
     // Existing state
     let availableJobs = $state<any[]>([]);
@@ -15,7 +16,7 @@
     onMount(async () => {
         try {
             const res = await fetch(
-                "https://shutup-forwarder-production.up.railway.app/api/jobs",
+                `${API_BASE_URL}/api/jobs`,
             );
             if (res.ok) {
                 const responseData = await res.json();
@@ -39,7 +40,7 @@
         selectedJob = null;
         try {
             const response = await fetch(
-                `https://shutup-forwarder-production.up.railway.app/api/jobs/${jobId}`,
+                `${API_BASE_URL}/api/jobs/${jobId}`,
             );
             const result = await response.json();
             if (result.status === "success") {
@@ -58,15 +59,20 @@
             return alert("Please enter a valid amount!");
 
         isSubmittingBid = true;
+
+        const driverId = (typeof window !== 'undefined' && (window as any).Clerk?.user?.id) || null;
+        const driverName = (typeof window !== 'undefined' && (window as any).Clerk?.user?.fullName) || "Test Driver";
+
         try {
             const response = await fetch(
-                `https://shutup-forwarder-production.up.railway.app/api/jobs/${selectedJob.id}/bids`,
+                `${API_BASE_URL}/api/jobs/${selectedJob.id}/bids`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        driverName: "Test Driver", // Hardcoded until Auth is added
+                        driverName: driverName,
                         amount: bidAmount,
+                        forwarderId: driverId
                     }),
                 },
             );
@@ -94,7 +100,7 @@
         isAcceptingDeal = true;
         try {
             const response = await fetch(
-                `https://shutup-forwarder-production.up.railway.app/api/jobs/${selectedJob.id}/bids/${bidId}/accept`,
+                `${API_BASE_URL}/api/jobs/${selectedJob.id}/bids/${bidId}/accept`,
                 {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
@@ -138,73 +144,45 @@
     </header>
 
     <div class="main-content-split">
-        <div class="jobs-grid">
+        <div class="jobs-list-container">
             {#each availableJobs as job}
                 <div
-                    class="job-card"
-                    class:active-card={selectedJob?.id === job.id}
+                    class="job-list-row"
+                    class:active-row={selectedJob?.id === job.id}
+                    onclick={() => openBiddingStation(job.id)}
                 >
-                    <div class="card-header">
-                        <span class="payout"
-                            >{job.payout
-                                ? `€${job.payout.replace("₹", "")}`
-                                : "€500"}</span
-                        >
-                        <span class="distance"
-                            >{job.distance || "Route Calc Pending"}</span
-                        >
+                    <div class="cell-vehicle">
+                        <span class="job-id-tag w-fit">SF-{job.jobNumber}</span>
+                        <span class="vehicle-name">{job.make || job.vehicleMake || ""} {job.model || job.vehicleModel || "Unknown Vehicle"}</span>
+                        <span class="vehicle-meta">Year: {job.year || "N/A"} · Runs: {job.runs || "N/A"}</span>
                     </div>
-
-                    <div class="route-info">
-                        <div class="location">
-                            <span class="dot pickup-dot"></span>
-                            <div class="text-group">
-                                <span class="label">PICKUP</span>
-                                <span class="city"
-                                    >{job.pickup ||
-                                        job.pickupAddress ||
-                                        "Unknown Pickup"}</span
-                                >
-                            </div>
-                        </div>
-                        <div class="route-line"></div>
-                        <div class="location">
-                            <span class="dot delivery-dot"></span>
-                            <div class="text-group">
-                                <span class="label">DELIVERY</span>
-                                <span class="city"
-                                    >{job.delivery ||
-                                        job.deliveryAddress ||
-                                        "Unknown Delivery"}</span
-                                >
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="vehicle-info">
-                        <strong>Vehicle:</strong>
-                        {job.make || job.vehicleMake || ""}
-                        {job.model || job.vehicleModel || "Unknown Vehicle"}
-                    </div>
-
-                    <div class="ai-insight">
-                        <span class="ai-icon">🤖</span>
-                        <span class="ai-text">
-                            {job.ai_analysis ||
-                                job.aiAnalysis ||
-                                job.aiReasoning ||
-                                "AI Cleared: Route and vehicle details validated."}
+                    <div class="cell-route">
+                        <span class="route-text">
+                            {(job.pickup || job.pickupAddress || "N/A").split(",")[0]}
+                            ➔
+                            {(job.delivery || job.deliveryAddress || "N/A").split(",")[0]}
                         </span>
                     </div>
-
-                    <button
-                        class="btn-accept"
-                        class:loading={isFetchingDetails &&
-                            selectedJob?.id === job.id}
-                        onclick={() => openBiddingStation(job.id)}
-                    >
-                        View & Bid
-                    </button>
+                    <div class="cell-distance">
+                        <span class="distance-badge">{job.distance || "Calc Pending"}</span>
+                    </div>
+                    <div class="cell-payout">
+                        <span class="payout-amount">
+                            {job.targetPrice
+                                ? `€${job.targetPrice}`
+                                : job.payout
+                                ? `€${job.payout.replace("₹", "")}`
+                                : "€500"}
+                        </span>
+                    </div>
+                    <div class="cell-action">
+                        <button
+                            class="btn-row-action"
+                            class:active-btn={selectedJob?.id === job.id}
+                        >
+                            {selectedJob?.id === job.id ? "Selected" : "View"}
+                        </button>
+                    </div>
                 </div>
             {/each}
 
@@ -414,33 +392,121 @@
         align-items: start;
     }
 
-    .jobs-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 24px;
-    }
-
-    .job-card {
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
-        border-radius: 16px;
-        padding: 24px;
+    .jobs-list-container {
         display: flex;
         flex-direction: column;
-        transition:
-            transform 0.2s,
-            box-shadow 0.2s,
-            border-color 0.2s;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        gap: 16px;
     }
-    .job-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-        border-color: #94a3b8;
+
+    .job-list-row {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 16px 24px;
+        display: grid;
+        grid-template-columns: 1.5fr 2fr 1fr 1fr 1fr;
+        align-items: center;
+        gap: 20px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
-    .active-card {
+
+    .job-list-row:hover {
         border-color: #3b82f6;
-        box-shadow: 0 0 0 2px #3b82f6;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transform: translateY(-1px);
+    }
+
+    .active-row {
+        border-color: #3b82f6;
+        background: #f8fafc;
+        box-shadow: 0 0 0 1px #3b82f6;
+    }
+
+    .job-id-tag {
+        font-family: monospace;
+        font-weight: 700;
+        font-size: 0.85rem;
+        background: #f1f5f9;
+        color: #475569;
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid #cbd5e1;
+    }
+
+    .cell-vehicle {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .vehicle-name {
+        font-weight: 700;
+        color: #0f172a;
+        font-size: 0.95rem;
+    }
+
+    .vehicle-meta {
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+
+    .cell-route {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .route-text {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    .distance-badge {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #475569;
+        background: #e2e8f0;
+        padding: 4px 8px;
+        border-radius: 8px;
+        width: fit-content;
+    }
+
+    .payout-amount {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #10b981;
+    }
+
+    .btn-row-action {
+        width: 100%;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #475569;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-row-action:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+
+    .active-btn {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #2563eb;
+    }
+
+    .active-btn:hover {
+        background: #1d4ed8;
+        color: #ffffff;
     }
 
     .card-header {

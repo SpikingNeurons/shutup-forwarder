@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { API_BASE_URL } from "$lib/api.js";
 
     type DriverRequest = {
         id: string;
@@ -25,7 +26,7 @@
         isLoading = true;
         try {
             const res = await fetch(
-                "https://shutup-forwarder-production.up.railway.app/api/driver-requests",
+                `${API_BASE_URL}/api/driver-requests`,
             );
             if (res.ok) {
                 const json = await res.json();
@@ -65,7 +66,7 @@
 
         try {
             const response = await fetch(
-                `https://shutup-forwarder-production.up.railway.app/api/driver-requests/${id}/approve`,
+                `${API_BASE_URL}/api/driver-requests/${id}/approve`,
                 {
                     method: "POST",
                 },
@@ -101,7 +102,7 @@
 
         try {
             const response = await fetch(
-                `https://shutup-forwarder-production.up.railway.app/api/driver-requests/${id}/reject`,
+                `${API_BASE_URL}/api/driver-requests/${id}/reject`,
                 {
                     method: "POST",
                 },
@@ -165,12 +166,7 @@
                 </svg>
                 Sync Requests
             </button>
-            <a
-                href="/admin"
-                class="bg-slate-900 text-white text-sm px-6 py-2.5 rounded-lg font-semibold no-underline shadow-sm hover:bg-slate-800 transition-colors"
-            >
-                ← Back to Command Center
-            </a>
+
         </div>
     </div>
 

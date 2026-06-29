@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { API_BASE_URL } from "$lib/api.js";
     // ── Reactive Language State ──
     let lang = $state<"en" | "de">("en");
 
@@ -174,26 +175,23 @@
         successMessage = "";
 
         try {
-            const res = await fetch(
-                "https://shutup-forwarder-production.up.railway.app/api/driver-requests",
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        firstName,
-                        lastName,
-                        email,
-                        phone,
-                        password,
-                        companyName,
-                        vatNumber,
-                        licenseClass,
-                        trailerType,
-                        hasWinch,
-                        hasCode95: true,
-                    }),
-                },
-            );
+            const res = await fetch(`${API_BASE_URL}/api/driver-requests`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    firstName,
+                    lastName,
+                    email,
+                    phone,
+                    password,
+                    companyName,
+                    vatNumber,
+                    licenseClass,
+                    trailerType,
+                    hasWinch,
+                    hasCode95: true,
+                }),
+            });
 
             if (res.ok) {
                 successMessage = t.success;

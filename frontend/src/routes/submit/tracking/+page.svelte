@@ -1,57 +1,81 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { API_BASE_URL } from "$lib/api.js";
 
-    // State to hold our live retrieved data
-    let jobData = {
-        trackingNumber: "Loading...",
-        make: "Loading Vehicle...",
-        pickup: "Origin",
-        delivery: "Destination",
-    };
-
-    // We will keep the mock driver data for now since the MVP backend doesn't handle driver matching yet
-    let driver = {
-        name: "Pieter van Dam",
-        rating: 4.7,
-        trips: 312,
-        lastUpdate: '"Driving through Cologne, on schedule for tomorrow."',
-    };
+    let job = $state<any>(null);
+    let isLoading = $state(true);
+    let errorMessage = $state("");
 
     onMount(async () => {
-        // 1. Get the live job ID that we saved in the processing page
-        const jobId = sessionStorage.getItem("shutup-live-job-id");
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryJobId = urlParams.get("id");
+        const jobId = queryJobId || sessionStorage.getItem("shutup-live-job-id");
 
         if (jobId) {
             try {
-                // 2. Fetch the exact job details from the FastAPI database
-                const response = await fetch(
-                    `https://shutup-forwarder-production.up.railway.app/api/jobs/${jobId}`,
-                );
-
+                const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}`);
                 if (response.ok) {
                     const result = await response.json();
-                    const liveData = result.data; // The Prisma database object
-
-                    // 3. Update the UI state with the real database values
-                    // FIXED: We now use `jobNumber` instead of the old trackingNumber
-                    jobData.trackingNumber = `SF-${liveData.jobNumber}`;
-                    jobData.make = `${liveData.make} ${liveData.model} · ${liveData.year}`;
-
-                    // Split by comma to keep the UI clean (e.g., "Amsterdam, Netherlands" -> "Amsterdam")
-                    jobData.pickup = liveData.pickup.split(",")[0];
-                    jobData.delivery = liveData.delivery.split(",")[0];
+                    job = result.data;
                 } else {
-                    console.error("Failed to load job from database");
-                    jobData.trackingNumber = "Error loading tracking";
+                    errorMessage = "Job not found in database.";
                 }
             } catch (e) {
                 console.error("Database connection error:", e);
-                jobData.trackingNumber = "Connection offline";
+                errorMessage = "Connection offline.";
+            } finally {
+                isLoading = false;
             }
         } else {
-            jobData.trackingNumber = "No active job found";
+            errorMessage = "No active job found.";
+            isLoading = false;
         }
     });
+
+    async function cancelBooking() {
+        if (!job || !confirm("Are you sure you want to cancel this booking?")) return;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/jobs/${job.id}/cancel`, {
+                method: "PATCH"
+            });
+            if (response.ok) {
+                const result = await response.json();
+                job.status = "Canceled";
+                alert("Booking canceled successfully!");
+            } else {
+                alert("Failed to cancel booking.");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Network error.");
+        }
+    }
+
+    // Helper to get progress percentage
+    function getProgressPercent(status: string): number {
+        switch (status) {
+            case "Reviewing": return 0;
+            case "Pending Pickup": return 15;
+            case "In Transit": return 55;
+            case "Delivery Protocol": return 85;
+            case "Completed": return 100;
+            case "Canceled": return 0;
+            default: return 0;
+        }
+    }
+
+    function getDisplayStatus(status: string): string {
+        switch (status) {
+            case "Reviewing": return "Intake Review";
+            case "Pending Pickup": return "Driver Matched";
+            case "In Transit": return "In Transit";
+            case "Delivery Protocol": return "Verification";
+            case "Completed": return "Delivered";
+            case "Canceled": return "Canceled";
+            default: return status;
+        }
+    }
 </script>
 
 <svelte:head>
@@ -60,96 +84,238 @@
 
 <section class="wizard-section">
     <div class="container wizard-container">
-        <div class="wizard-header">
-            <a href="/" class="back-link">← Back to Dashboard</a>
-            <div class="step-indicator success-indicator">
-                Driver Assigned ✅
+        {#if isLoading}
+            <div class="wizard-card text-center py-20 space-y-4">
+                <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
+                <p class="text-slate-500 font-semibold">Retrieving shipping parameters...</p>
             </div>
-        </div>
-
-        <div class="wizard-card tracking-card">
-            <div class="job-header">
-                <div class="job-id">Tracking: {jobData.trackingNumber}</div>
-                <h2 class="car-name">{jobData.make}</h2>
+        {:else if errorMessage || !job}
+            <div class="wizard-card text-center py-16">
+                <span class="text-4xl">⚠️</span>
+                <h2 class="text-xl font-bold text-slate-800 mt-4">{errorMessage || "Job not found"}</h2>
+                <p class="text-slate-500 mt-2">Could not retrieve tracking details for this load.</p>
+                <a href="/" class="btn btn--primary mt-6">Return to Dashboard</a>
             </div>
-
-            <div class="route-map">
-                <div class="map-point">
-                    <div class="point-dot active"></div>
-                    <div class="point-label">{jobData.pickup}</div>
-                    <div class="point-sub">(Origin)</div>
-                </div>
-                <div class="map-line">
-                    <div class="line-progress"></div>
-                    <div class="car-icon">🚗</div>
-                </div>
-                <div class="map-point">
-                    <div class="point-dot"></div>
-                    <div class="point-label">{jobData.delivery}</div>
-                    <div class="point-sub">(Destination)</div>
+        {:else}
+            <div class="wizard-header">
+                <a href="/trips" class="back-link">← Back to Trips</a>
+                <div class="step-indicator" 
+                     class:success-indicator={job.status === 'Completed' || job.status === 'Pending Pickup'} 
+                     class:danger-indicator={job.status === 'Canceled'}>
+                    {getDisplayStatus(job.status)} {job.status === 'Completed' ? '✅' : ''}
                 </div>
             </div>
 
-            <hr class="divider" />
+            <!-- Completed Banner -->
+            {#if job.status === 'Completed'}
+                <div class="banner-success animate-fade-in">
+                    <span class="banner-icon">🎉</span>
+                    <div class="banner-body">
+                        <h4>Delivery Complete!</h4>
+                        <p>Your vehicle has been successfully delivered and verified with zero additional damage reported.</p>
+                    </div>
+                </div>
+            {:else if job.status === 'Canceled'}
+                <div class="banner-danger animate-fade-in">
+                    <span class="banner-icon">❌</span>
+                    <div class="banner-body">
+                        <h4>Trip Canceled</h4>
+                        <p>This trip has been canceled and is no longer active.</p>
+                    </div>
+                </div>
+            {/if}
 
-            <div class="timeline">
-                <div class="time-item done">
-                    <div class="time-dot">✅</div>
-                    <div class="time-content">
-                        <strong>Thu 09:00</strong> — Car collected. Photos locked.
-                    </div>
+            <div class="wizard-card tracking-card">
+                <div class="job-header">
+                    <div class="job-id">Tracking: SF-{job.jobNumber}</div>
+                    <h2 class="car-name">{job.make} {job.model} · {job.year}</h2>
                 </div>
-                <div class="time-item done">
-                    <div class="time-dot">✅</div>
-                    <div class="time-content">
-                        <strong>Thu 14:00</strong> — Departed pickup region.
-                    </div>
-                </div>
-                <div class="time-item done">
-                    <div class="time-dot">✅</div>
-                    <div class="time-content">
-                        <strong>Fri 14:00</strong> — Crossed border.
-                    </div>
-                </div>
-                <div class="time-item current">
-                    <div class="time-dot pulse">📍</div>
-                    <div class="time-content">
-                        <strong>Fri 17:30</strong> — On the way
-                    </div>
-                </div>
-                <div class="time-item future">
-                    <div class="time-dot">○</div>
-                    <div class="time-content">
-                        <strong>Sat 09:00</strong> — Estimated delivery
-                    </div>
-                </div>
-            </div>
 
-            <hr class="divider" />
+                <div class="route-map" class:grayed={job.status === 'Canceled'}>
+                    <div class="map-point">
+                        <div class="point-dot active"></div>
+                        <div class="point-label">{job.pickup.split(",")[0]}</div>
+                        <div class="point-sub">(Origin)</div>
+                    </div>
+                    <div class="map-line">
+                        <div class="line-progress" style="width: {getProgressPercent(job.status)}%"></div>
+                        <div class="car-icon" style="left: calc({getProgressPercent(job.status)}% - 12px)">🚗</div>
+                    </div>
+                    <div class="map-point">
+                        <div class="point-dot" class:active={job.status === 'Completed'}></div>
+                        <div class="point-label">{job.delivery.split(",")[0]}</div>
+                        <div class="point-sub">(Destination)</div>
+                    </div>
+                </div>
 
-            <div class="driver-card">
-                <div class="driver-info">
-                    <div class="driver-avatar">👨‍✈️</div>
-                    <div class="driver-details">
-                        <h3>{driver.name}</h3>
-                        <div class="driver-stats">
-                            <span class="stars">★★★★☆</span>
-                            {driver.rating} · {driver.trips} trips
+                <hr class="divider" />
+
+                <div class="timeline">
+                    <!-- Step 1: Booked -->
+                    <div class="time-item done">
+                        <div class="time-dot">✅</div>
+                        <div class="time-content">
+                            <strong>Job Booked</strong> — Vehicle specifications registered.
                         </div>
                     </div>
+
+                    <!-- Step 2: Intake AI Review -->
+                    {#if job.status === 'Reviewing'}
+                        <div class="time-item current">
+                            <div class="time-dot pulse">🤖</div>
+                            <div class="time-content">
+                                <strong>Intake AI Reviewing</strong> — Scanning condition photos & calculating dispatcher pricing.
+                            </div>
+                        </div>
+                        <div class="time-item future">
+                            <div class="time-dot">○</div>
+                            <div class="time-content">
+                                <strong>Awaiting Driver Match</strong> — AI negotiating with local transporters.
+                            </div>
+                        </div>
+                        <div class="time-item future">
+                            <div class="time-dot">○</div>
+                            <div class="time-content">
+                                <strong>En Route</strong> — GPS transit updates.
+                            </div>
+                        </div>
+                    {:else if job.status === 'Pending Pickup'}
+                        <!-- Step 3: Pending Pickup -->
+                        <div class="time-item done">
+                            <div class="time-dot">✅</div>
+                            <div class="time-content">
+                                <strong>AI Check Passed</strong> — Baseline condition profile locked.
+                            </div>
+                        </div>
+                        <div class="time-item current">
+                            <div class="time-dot pulse">🚛</div>
+                            <div class="time-content">
+                                <strong>Awaiting Pickup</strong> — Driver matched. Scheduled for collection.
+                            </div>
+                        </div>
+                        <div class="time-item future">
+                            <div class="time-dot">○</div>
+                            <div class="time-content">
+                                <strong>En Route</strong> — GPS transit updates.
+                            </div>
+                        </div>
+                    {:else if job.status === 'In Transit'}
+                        <!-- Step 4: In Transit -->
+                        <div class="time-item done">
+                            <div class="time-dot">✅</div>
+                            <div class="time-content">
+                                <strong>Transporter Dispatched</strong> — Vehicle picked up.
+                            </div>
+                        </div>
+                        <div class="time-item current">
+                            <div class="time-dot pulse">📍</div>
+                            <div class="time-content">
+                                <strong>En Route</strong> — Vehicle in transit to {job.delivery.split(",")[0]}.
+                            </div>
+                        </div>
+                        <div class="time-item future">
+                            <div class="time-dot">○</div>
+                            <div class="time-content">
+                                <strong>Drop-off Verification</strong> — Comparative photo analysis.
+                            </div>
+                        </div>
+                    {:else if job.status === 'Delivery Protocol'}
+                        <!-- Step 5: Delivery Protocol -->
+                        <div class="time-item done">
+                            <div class="time-dot">✅</div>
+                            <div class="time-content">
+                                <strong>Arrived at Destination</strong> — Transporter at drop-off coordinates.
+                            </div>
+                        </div>
+                        <div class="time-item current">
+                            <div class="time-dot pulse">📸</div>
+                            <div class="time-content">
+                                <strong>AI Inspection Active</strong> — Comparing pickup & delivery condition states.
+                            </div>
+                        </div>
+                        <div class="time-item future">
+                            <div class="time-dot">○</div>
+                            <div class="time-content">
+                                <strong>Completed</strong> — Final checkout clear.
+                            </div>
+                        </div>
+                    {:else if job.status === 'Completed'}
+                        <!-- Step 6: Completed -->
+                        <div class="time-item done">
+                            <div class="time-dot">✅</div>
+                            <div class="time-content">
+                                <strong>Arrived & Inspected</strong> — Condition checked by Intake AI.
+                            </div>
+                        </div>
+                        <div class="time-item done">
+                            <div class="time-dot">✅</div>
+                            <div class="time-content">
+                                <strong>Delivered & Complete</strong> — Vehicle signed off. Job completed.
+                            </div>
+                        </div>
+                    {:else if job.status === 'Canceled'}
+                        <!-- Canceled State -->
+                        <div class="time-item canceled">
+                            <div class="time-dot">❌</div>
+                            <div class="time-content" style="color: #ef4444;">
+                                <strong>Trip Canceled</strong> — Shipment has been aborted.
+                            </div>
+                        </div>
+                    {/if}
                 </div>
 
-                <div class="driver-update">
-                    <span class="update-time">Last update · 2 hours ago</span>
-                    <p>{driver.lastUpdate}</p>
-                </div>
+                <hr class="divider" />
 
-                <div class="driver-actions">
-                    <button class="action-btn call-btn">📞 Call</button>
-                    <button class="action-btn msg-btn">💬 Message</button>
+                <!-- Driver Card -->
+                <div class="driver-card">
+                    {#if job.forwarder}
+                        <div class="driver-info">
+                            <div class="driver-avatar">🚛</div>
+                            <div class="driver-details">
+                                <h3>{job.forwarder.name || 'Verified Transporter'}</h3>
+                                <div class="driver-stats">
+                                    <span class="stars">★★★★★</span>
+                                    4.9 · 186 successful loads
+                                </div>
+                            </div>
+                        </div>
+                        <div class="driver-update">
+                            <span class="update-time">Current Assignment Status</span>
+                            <p>"{job.status === 'Completed' ? 'Delivery protocol successfully finalized.' : 'Assigned to your load and heading to pickup location.'}"</p>
+                        </div>
+                        <div class="driver-actions">
+                            <button class="action-btn call-btn">📞 Contact</button>
+                            <button class="action-btn msg-btn">💬 Chat</button>
+                        </div>
+                    {:else if job.status === 'Canceled'}
+                        <div class="text-center text-slate-400 py-4 font-semibold">
+                            Trip Canceled. No driver assigned.
+                        </div>
+                    {:else}
+                        <div class="driver-info">
+                            <div class="driver-avatar">🤖</div>
+                            <div class="driver-details">
+                                <h3>AI Dispatch Broker</h3>
+                                <div class="driver-stats">
+                                    Awaiting driver bids (Target Price: €{job.targetPrice})
+                                </div>
+                            </div>
+                        </div>
+                        <div class="driver-update">
+                            <span class="update-time">Intake AI Status</span>
+                            <p>"Broadcasting shipment data to regional carriers. Bidding negotiations active."</p>
+                        </div>
+                        {#if job.status === 'Reviewing' || job.status === 'Pending Pickup'}
+                            <div class="mt-4">
+                                <button onclick={cancelBooking} class="w-full bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-3 px-4 rounded-xl border border-red-200 transition-colors cursor-pointer text-sm">
+                                    ❌ Cancel Transport Booking
+                                </button>
+                            </div>
+                        {/if}
+                    {/if}
                 </div>
             </div>
-        </div>
+        {/if}
     </div>
 </section>
 
@@ -163,7 +329,6 @@
         font-family: "Inter", system-ui, sans-serif;
     }
 
-    /* FIXED: Expanded to 600px to match the rest of the application */
     .wizard-container {
         max-width: 600px;
         margin: 0 auto;
@@ -200,6 +365,11 @@
         background: #dcfce7;
         border-color: #86efac;
         color: #16a34a;
+    }
+    .danger-indicator {
+        background: #fef2f2;
+        border-color: #fca5a5;
+        color: #ef4444;
     }
 
     .wizard-card {
@@ -238,16 +408,20 @@
         margin: 28px 0;
     }
 
-    /* FIXED: Visual Route Map Layout */
     .route-map {
         display: flex;
-        align-items: flex-start; /* Keeps the line at the top, not the center of the block */
+        align-items: flex-start;
         justify-content: space-between;
         padding: 10px 0;
+        transition: opacity 0.3s;
+    }
+    .route-map.grayed {
+        opacity: 0.4;
+        filter: grayscale(1);
     }
     .map-point {
         text-align: center;
-        flex: 0 0 140px; /* Gives the text more room so it doesn't squish */
+        flex: 0 0 140px;
     }
     .point-dot {
         width: 18px;
@@ -282,7 +456,7 @@
         background: #e2e8f0;
         border-radius: 2px;
         position: relative;
-        margin: 7px -20px 0; /* Pushes the line down perfectly to intersect the dots */
+        margin: 7px -20px 0;
         z-index: 1;
     }
     .line-progress {
@@ -290,17 +464,17 @@
         top: 0;
         left: 0;
         height: 100%;
-        width: 75%;
         background: linear-gradient(90deg, #3b82f6, #60a5fa);
         border-radius: 2px;
+        transition: width 0.4s ease;
     }
     .car-icon {
         position: absolute;
         top: -14px;
-        left: 75%;
         transform: translateX(-50%);
         font-size: 1.5rem;
         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        transition: left 0.4s ease;
     }
 
     /* Timeline */
@@ -443,6 +617,45 @@
         box-shadow: 0 6px 12px -2px rgba(37, 99, 235, 0.3);
     }
 
+    /* Banners styling */
+    .banner-success {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 6px -1px rgba(24, 120, 50, 0.05);
+    }
+    .banner-danger {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        background: #fef2f2;
+        border: 1px solid #fca5a5;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 6px -1px rgba(120, 24, 24, 0.05);
+    }
+    .banner-icon {
+        font-size: 1.5rem;
+    }
+    .banner-body h4 {
+        margin: 0 0 4px 0;
+        font-size: 1rem;
+        font-weight: 750;
+        color: #111827;
+    }
+    .banner-body p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #4b5563;
+        line-height: 1.4;
+    }
+
     @keyframes pulse-anim {
         0% {
             transform: scale(1);
@@ -470,6 +683,6 @@
         }
         .map-point {
             flex: 0 0 100px;
-        } /* Shrink slightly on mobile */
+        }
     }
 </style>

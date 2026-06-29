@@ -54,7 +54,7 @@
         }
     }
 
-    onMount(async () => {
+    onMount(() => {
         const saved = localStorage.getItem('shutup-lang') as Lang | null;
         if (saved === 'en' || saved === 'de') lang = saved;
 
@@ -142,67 +142,6 @@
     <meta name="description" content={t.page_desc} />
 </svelte:head>
 
-<header class="nav" id="nav">
-    <div class="container nav__inner">
-        <a href="#" class="nav__logo">
-            <span class="logo-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
-                    <path d="M10 17h4V5H2v12h3"></path>
-                    <path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5"></path>
-                    <path d="M14 17h1"></path>
-                    <circle cx="7.5" cy="17.5" r="2.5"></circle>
-                    <circle cx="17.5" cy="17.5" r="2.5"></circle>
-                </svg>
-            </span>
-            <span>ShutUP <strong>Forwarder</strong></span>
-        </a>
-        <nav class="nav__links" class:open={menuOpen} aria-label="Main navigation">
-            <a href="#how-it-works" onclick={() => (menuOpen = false)}>{t.nav_how}</a>
-            <a href="#step-by-step" onclick={() => (menuOpen = false)}>{t.nav_step}</a>
-            <a href="#features" onclick={() => (menuOpen = false)}>{t.nav_features}</a>
-            <a href="#faq" onclick={() => (menuOpen = false)}>{t.nav_faq}</a>
-            <a href="#drivers" class="nav__driver-link" onclick={() => (menuOpen = false)}>{t.nav_drivers}</a>
-        </nav>
-        <div class="nav__actions" class:open={menuOpen}>
-    <div class="lang-switcher">
-        <button class="lang-btn" class:active={lang === 'en'} onclick={() => setLang('en')}>EN</button>
-        <button class="lang-btn" class:active={lang === 'de'} onclick={() => setLang('de')}>DE</button>
-    </div>
-
-    {#if isLoggedIn}
-        <button 
-            class="btn btn--ghost"
-            onclick={async (e) => { 
-                e.preventDefault();
-                
-                // 1. Instantly update Svelte's reactive state
-                isLoggedIn = false;
-                currentRole = '';
-                
-                // 2. Clear Svelte's memory
-                localStorage.clear(); 
-                
-                // 3. Sign out of Clerk securely
-                if (typeof window !== 'undefined' && (window as any).Clerk) {
-                    await (window as any).Clerk.signOut();
-                }
-                
-                // 4. Force a hard refresh of the dashboard to reset everything
-                window.location.reload();
-            }}
-        >
-            Logout
-        </button>
-    {:else}
-        <a href="/login" class="btn btn--ghost">{t.nav_signin}</a>
-    {/if}
-</div>
-        <button class="nav__burger" id="burger" aria-label="Open menu" onclick={() => (menuOpen = !menuOpen)}>
-            <span></span><span></span><span></span>
-        </button>
-    </div>
-</header>
-
 <section class="hero">
     <div class="hero__bg-grid"></div>
     <div class="container hero-flex">
@@ -214,47 +153,7 @@
             </h1>
             <p class="hero__sub">{t.hero_sub}</p>
             
-            <!-- ── MERGED BUTTONS START ── -->
-            <div class="hero__ctas flex flex-wrap items-center gap-4 mt-8">
-                
-                {#if currentRole === 'admin'}
-                    <a href="/admin" class="bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition-colors no-underline">
-                        Command Center
-                    </a>
-                    
-                {:else if currentRole === 'employee' || currentRole === 'FORWARDER'}
-                    <a href="/jobs" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition-colors no-underline">
-                        Find Loads
-                    </a>
-                    <a href="/jobs/active" class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:opacity-90 transition-opacity flex items-center gap-2 no-underline">
-                        📦 My Deliveries
-                    </a>
-                    
-                {:else if isLoggedIn}
-                    <a href="/submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-blue-200 no-underline">
-                        Get an instant quote &rarr;
-                    </a>
-                    <a href="/submit/tracking" class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:opacity-90 transition-opacity flex items-center gap-2 no-underline">
-                        📍 Live Tracking
-                    </a>
-                    
-                {:else}
-                    <!-- Completely logged out user -->
-                    <div class="flex items-center gap-3">
-                        <a href="/login" class="bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold py-3 px-6 rounded-lg transition-colors no-underline">
-                            Login
-                        </a>
-                        <a href="/signup" class="bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold py-3 px-6 rounded-lg transition-colors no-underline">
-                            Sign Up
-                        </a>
-                        <a href="/driver-apply" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-lg shadow-blue-200 no-underline">
-                            Apply as Driver
-                        </a>
-                    </div>
-                {/if}
 
-            </div>
-            <!-- ── MERGED BUTTONS END ── -->
             <div class="hero__trust mt-10">
                 <div class="trust-item">
                     <span class="trust-stars">★★★★★</span>
@@ -446,6 +345,7 @@
     </div>
 </section>
 
+{#if !currentRole}
 <section class="section drivers-section" id="drivers">
     <div class="container drivers-inner">
         <div class="drivers-text">
@@ -459,7 +359,7 @@
                 <li>{t.drv_li4}</li>
                 <li>{t.drv_li5}</li>
             </ul>
-            <a href="#" class="btn btn--white btn--lg">{t.drv_cta}</a>
+            <a href="/driver-apply" class="btn btn--white btn--lg">{t.drv_cta}</a>
         </div>
         <div class="drivers-mockup">
             <div class="phone-mockup phone-mockup--dark">
@@ -493,6 +393,7 @@
         </div>
     </div>
 </section>
+{/if}
 
 <section class="section" id="step-by-step">
     <div class="container">
@@ -673,7 +574,7 @@
                 <a href="#how-it-works">{t.footer_how}</a>
                 <a href="#features">{t.footer_features}</a>
                 <a href="#protection">{t.footer_protection}</a>
-                <a href="#for-who">{t.footer_businesses}</a>
+                <a href="#for-who">{t.footer_business}</a>
                 <a href="#drivers">{t.footer_drivers}</a>
             </div>
             <div class="footer-col">
@@ -682,7 +583,7 @@
                 <a href="#">{t.footer_de}</a>
                 <a href="#">{t.footer_be}</a>
                 <a href="#">{t.footer_fr}</a>
-                <a href="#">{t.footer_europe}</a>
+                <a href="#">{t.footer_eu}</a>
             </div>
             <div class="footer-col">
                 <h5>{t.footer_company}</h5>
@@ -693,7 +594,7 @@
             </div>
             <div class="footer-col">
                 <h5>{t.footer_legal}</h5>
-                <a href="#">{t.footer_terms}</a>
+                <a href="#">{t.footer_tos}</a>
                 <a href="#">{t.footer_privacy}</a>
                 <a href="#">{t.footer_cookies}</a>
                 <a href="#">{t.footer_cmr}</a>
