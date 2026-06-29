@@ -21,11 +21,11 @@ async def lifespan(app: FastAPI):
     yield
     print("Disconnecting from Prisma database...")
     await db.disconnect()
-
+ 
 app = FastAPI(title="ShutUP Forwarder API", lifespan=lifespan)
 
 origins = [
-    "http://localhost:5173",
+    "http://localhost:5173", 
     "https://shutup-app.vercel.app",
     "https://shutup-bvmjip4k8-fahads-projects-4ecec35f.vercel.app"
 ]
