@@ -86,6 +86,24 @@
         }
     }
 
+    async function deleteTrip(id: string) {
+        if (!confirm("Are you sure you want to delete this trip record permanently? This action cannot be undone.")) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/jobs/${id}`, {
+                method: "DELETE",
+            });
+            if (response.ok) {
+                trips = trips.filter((t) => t.id !== id);
+                alert("Trip record deleted successfully.");
+            } else {
+                alert("Failed to delete trip record.");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Network error.");
+        }
+    }
+
     function openDriverTracker(trip: any) {
         localStorage.setItem("activeTransitJob", JSON.stringify(trip));
         goto("/jobs/active");
@@ -214,6 +232,11 @@
                                 {#if (currentRole === 'FORWARDER' || currentRole === 'employee') && ['Pending Pickup', 'In Transit', 'Delivery Protocol'].includes(trip.status)}
                                     <button onclick={() => openDriverTracker(trip)} class="btn-action btn-primary btn-sm">
                                         Tracker
+                                    </button>
+                                {/if}
+                                {#if currentRole === 'admin' && ['Completed', 'Canceled'].includes(trip.status)}
+                                    <button onclick={() => deleteTrip(trip.id)} class="btn-action btn-danger btn-sm">
+                                        Delete
                                     </button>
                                 {/if}
                             </div>
