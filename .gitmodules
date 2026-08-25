@@ -4,3 +4,9 @@
 [submodule "src_code/Fahad_Poc"]
 	path = src_code/Fahad_Poc
 	url = https://github.com/ForwarderDE/Fahad_Poc
+[submodule "src_code/NikhilForwarder"]
+	path = src_code/NikhilForwarder
+	url = https://github.com/Hanz0Hasashi/forwarder
+[submodule "src_code/FahadForwader"]
+	path = src_code/FahadForwader
+	url = https://github.com/Fahadkhan0328/shutup-forwarder
