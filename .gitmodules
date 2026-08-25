@@ -1,0 +1,6 @@
+[submodule "src_code/ForwarderDEFullstack"]
+	path = src_code/ForwarderDEFullstack
+	url = https://github.com/ForwarderDE/Fullstack
+[submodule "src_code/Fahad_Poc"]
+	path = src_code/Fahad_Poc
+	url = https://github.com/ForwarderDE/Fahad_Poc
