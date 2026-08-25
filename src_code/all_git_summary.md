@@ -18,6 +18,18 @@
 | July 2026 | 30 |
 | August 2026 | 6 |
 
+Total commits --- 71
+
+### Unique Commits by Author
+
+These counts are calculated after deduplicating commits by commit hash across all source reports.
+
+| Author | Unique commits |
+| --- | ---: |
+| Fahad khan | 31 |
+| Hanzo03 | 25 |
+| Praveen Kulkarni | 15 |
+
 | Repository | Commits represented | Relationship |
 | --- | ---: | --- |
 | Forwarder | 38 | Contains the 35-commit Fahad history plus 3 August commits |
