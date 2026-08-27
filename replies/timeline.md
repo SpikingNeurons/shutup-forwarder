@@ -15,15 +15,21 @@ This timeline is based on the readable Gmail Markdown exports, the available Gma
 | 22 Apr 2026, 4:21 PM | Praveen Kulkarni | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Estimated a live POC at approximately EUR 10,000 over six months, including salaries, server costs, and office expenses. |
 | 22 Apr 2026, 7:11 PM | Praveen Kulkarni | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Defined POC as an end-to-end prototype with functionality; said AI agents and image matching would improve later as real client data became available. |
 
+**Citation note:** The assessment report's correspondence log cites the 18 April mockup and 3 May EUR 2,000 proposal but does not cite either of these two 22 April messages. They should be read together: the 4:21 PM message gives the approximate EUR 10,000 live-POC estimate, while the 7:11 PM message explains what “POC” meant and that AI/image-matching improvements were expected later.
+
 ## May 2026: Proposal, payment, and initial work
 
 | Date and time | Sender | Channel and source | Communication |
 |---|---|---|---|
 | 1 May 2026, 10:29 AM | Praveen Kulkarni | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Said the site was in German and English and that he could allocate resources and set up architecture and infrastructure. |
 | 2 May 2026, 5:29 PM | Peter Riep | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Asked for the minimum funds needed for the next six weeks. |
-| 3 May 2026, 3:37 PM | Praveen Kulkarni | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Proposed EUR 2,000 to engage resources, with work pausable after six weeks. Described the starting scope as a login screen, basic mock-data functionality, input forms, and user types, while stating that scope should be defined and could be redefined. |
-| 5 May 2026, 1:09 AM | Peter Riep | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Asked how to transfer the money and said he needed to know precisely what he was selling. |
+| 3 May 2026, 3:37 PM | Praveen Kulkarni | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Proposed EUR 2,000 to engage resources, with work pausable after six weeks. Described the starting scope as a login screen, basic mock-data functionality, input forms, and user types; expressly said the scope should be defined, invited Peter to redefine it, and suggested reviewing comparable European products and screen-capturing them if needed. |
+| 5 May 2026, 1:09 AM | Peter Riep | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Asked how to transfer the money. |
 | 7 May 2026, 7:11 PM | Praveen Kulkarni | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Provided bank details and stated that Peter needed to elaborate specifics or Praveen would have to make assumptions and build the app. |
+| 18 May 2026, 5:10 PM | Fahad khan | Git history, `src_code/FahadForwarder.md` and `src_code/all_git_summary.md` | Commit `3581ba9` recorded Clerk authentication, role routing, the job lifecycle, and Euro marketplace UI before Peter's 20 June feedback. |
+| 19 May 2026, 3:54 PM | Fahad khan | Git history, `src_code/FahadForwarder.md` and `src_code/all_git_summary.md` | Commit `e75e2d7` recorded the bidding feature before Peter's 20 June feedback. |
+| 19 May 2026, 5:15-6:09 PM | Fahad khan | Git history, `src_code/FahadForwarder.md` and `src_code/all_git_summary.md` | Commits `2fd93de`, `daf2d69`, `10baad8`, and `9a4daa8` recorded Prisma/database, deployment, and backend configuration work. |
+| 20 May 2026, 11:48 AM-1:35 PM | Fahad khan | Git history, `src_code/FahadForwarder.md` and `src_code/all_git_summary.md` | Commits `3ad41c0` and `93b6022` recorded CORS and deployment security changes. |
 | 18 May 2026, 11:26 AM | Praveen Kulkarni | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Said resources were being allocated and asked whether payment processing was planned. |
 | 20 May 2026, 11:32 AM | Praveen Kulkarni | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Said people needed to be put to work for six weeks. |
 | 20 May 2026, 11:35 AM | Praveen Kulkarni | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Said team members had already started work and could be reassigned if payment failed. |
@@ -33,6 +39,7 @@ This timeline is based on the readable Gmail Markdown exports, the available Gma
 | 22 May 2026, 12:39 AM | Praveen Kulkarni | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Sent a video and said it was for organizing the expected screens. |
 | 25 May 2026, 12:08 AM | Peter Riep | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Said he had given Manohar the money. |
 | 26 May 2026, 12:16 PM | Praveen Kulkarni | Email, `gmail/Hi praveen.md`; subject: **Hi praveen** | Wrote: “I received money from mayur.” Peter replied with a thumbs-up at 12:33 PM. |
+| 10 Jun 2026, 12:22 AM | Fahad khan | Git history, `src_code/FahadForwarder.md` and `src_code/all_git_summary.md` | Commit `fd92476` recorded dashboard work before the 20 June feedback. |
 
 ## June 2026: Prototype clarification and feedback
 
@@ -99,9 +106,10 @@ This timeline is based on the readable Gmail Markdown exports, the available Gma
 | 4 Aug 2026, 4:22 PM | Skander Ben Abdelmalak | WhatsApp, `whatsapp/messages.md` | Asked for a meeting with the available developers to assess suitability. |
 | 4 Aug 2026, 9:54 PM | Skander Ben Abdelmalak | WhatsApp, `whatsapp/messages.md` | Said suitability had to be established before onboarding and agreed to arrange a meeting. |
 | 5 Aug 2026, 9:24 PM | Praveen Kulkarni | WhatsApp, `whatsapp/messages.md` | Said the internal meeting was not scheduled with Skander, requested a BRD from Peter and Skander, and proposed deciding between shared and dedicated resources. |
-| 5 Aug 2026, 11:41 PM | Skander Ben Abdelmalak | WhatsApp, `whatsapp/messages.md` | Said the focus was finding competent developers, required an interview with the actual coder, and then stated that the project was ended and a full refund was demanded. |
 | 5 Aug 2026, 10:08 PM | Peter Riep | Email, `gmail/Regarding Skander.md`; subject: **Regarding Skander** | Wrote: “Skander has 100% decision-making power!” and warned that Skander might end the work relationship. |
+| 5 Aug 2026, 11:41 PM | Skander Ben Abdelmalak | WhatsApp, `whatsapp/messages.md` | Said the focus was finding competent developers, required an interview with the actual coder, and stated that if a competent developer could not be provided for interview by Friday, he would consider the contract breached and begin the refund process. |
 | 7 Aug 2026 | Skander Ben Abdelmalak | PDF, `whatsapp/refund_demand_letter.pdf` | The refund letter later asserted that this was the deadline for providing a competent developer. No matching 7 August WhatsApp message was found in the supplied transcript. |
+| 10 Aug 2026, 9:19 PM | Skander Ben Abdelmalak | WhatsApp, `whatsapp/messages.md` | Stated that the project could not continue, said the developer requirement had not been met, and formally demanded a full refund within 14 days. |
 | 10 Aug 2026 | Skander Ben Abdelmalak | PDFs, `whatsapp/forwarder_assessment_report.pdf` and `whatsapp/refund_demand_letter.pdf` | Both documents are dated 10 August 2026. The refund letter demanded EUR 2,000 and threatened German debt-collection proceedings. |
 | 12 Aug 2026, 4:32 PM | Praveen Kulkarni | Email, `gmail/Regarding Skander.md`; subject: **Regarding Skander** | Disputed the refund claim, explained that no requirements document had been provided, described the changed technical control, and stated that the broader POC required approximately EUR 10,000. |
 | 12 Aug 2026, 6:59 PM | Peter Riep | Email, `gmail/Regarding Skander.md`; subject: **Regarding Skander** | Said Skander was CTO, asked Praveen to work under him or end the relationship, and proposed an EUR 1,850 refund. |

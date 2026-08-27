@@ -146,6 +146,7 @@ He is not available for hire, as he is already very well paid. I shared his prof
 My current resources have been selected through a lot of hiring effort, and they have an established professional relationship with me. I can make them available on a shared basis, as they are already involved in my other projects. Palash can manage them from here on a milestone-by-milestone basis, and he understands the work culture here.
 
 If you want dedicated developers, we'll need to post job advertisements and hire people exclusively for your project on fixed-term contracts, with options for extension. This is possible, but in that case you will need to take responsibility for quality checks and resource management, as both hiring and project management are full-time responsibilities. We can provide basic on-ground coordination.
+
 [23:41, 05/08/2026] sikander peter friend forwarder: Hi Praveen,
 
 Let's realign on the next steps so we can get this project moving.
@@ -158,6 +159,10 @@ Second, regarding the BRD: I agree that clear requirements are essential, and we
 Once we have successfully vetted the developers, established the core infrastructure, and signed an NDA, we will provide the full BRD for the detailed features.
 
 Please let me know what time I can interview the developer. If you cannot provide competent developers for me to speak with until Friday, I will consider this contract breached and we will move immediately to the refund process for the 2000€.
+
+
+[21:19, 10/08/2026] sikander peter friend forwarder:
+
 Hello Praveen,
 
 first of all, thank you for the cooperation. Unfortunately, we can't continue - as announced you missed presenting a competent developer. Therefore, in agreement and consultation with Peter, we decided to end the project with you and formally demand a full refund within 14 days of receipt of the attached letter.
@@ -169,6 +174,7 @@ Please confirm receipt and initiate the transfer to the account specified in the
 Thank you and kind regards,
 
 Skander
+
 [16:32, 12/08/2026] Praveen Kulkarni: i have emailed you and peter.
 [18:54, 12/08/2026] sikander peter friend forwarder: Hi praveen, 
 
