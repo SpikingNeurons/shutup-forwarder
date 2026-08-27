@@ -1,3 +1,65 @@
+[13:47, 07/07/2026] Praveen Kulkarni: Hi
+[13:48, 07/07/2026] sikander peter friend forwarder: hi
+[16:40, 08/07/2026] sikander peter friend forwarder: okay I talked with peter, 
+
+The direction became clearer, I think there is no way around the spring boot environment
+[16:41, 08/07/2026] sikander peter friend forwarder: we need to support eft, edifact and ecmr frameworks and the core is all from a spring boot initiative
+[16:42, 08/07/2026] Praveen Kulkarni: we need to support eft, edifact and ecmr frameworks and the core is all from a spring boot initiative
+Can you send me links for all this ... In general would like to know how europe ecosystem is organized
+[16:42, 08/07/2026] sikander peter friend forwarder: if there is really a big shortage of spring boot developers in your network, we could only study and research how much effort it takes to migrate and port the frameworks to nestjs/ typescript
+[16:43, 08/07/2026] sikander peter friend forwarder: https://github.com/EFTI4EU/reference-implementation
+[16:43, 08/07/2026] Praveen Kulkarni: Can you send me links for all this ... In general would like to know how europe ecosystem is organized
+Understand that I am not aware of this things .... But I have a friend who is having 10 years of experience in springboot and working at JP Morgan .... I can consult him as well
+[16:46, 08/07/2026] Praveen Kulkarni: https://github.com/EFTI4EU/reference-implementation
+Just a naive thought even if it is springboot core we can spin it as a server and just connect it via any stack we have with rest endpoints in springboot.... Yes in start it will be double hop but better than migrating code bases
+[16:48, 08/07/2026] sikander peter friend forwarder: yes we can also connect with it through api, but this would be maintaining two services in two languages
+[16:48, 08/07/2026] Praveen Kulkarni: yes we can also connect with it through api, but this would be maintaining two services in two languages
+Yes that's the double hop i said .... But looks like the link u sent itself is a new initiative
+[16:48, 08/07/2026] sikander peter friend forwarder: since it is the same bounded context, it is less headache to develop that in one language
+[16:49, 08/07/2026] Praveen Kulkarni: It looks something new in Europe opensource ecosystem.... So I don't mind studying it
+[16:49, 08/07/2026] sikander peter friend forwarder: yes this becomes standard, the first laws are already passed and 2027 ongoing it becomes requirement
+[16:51, 08/07/2026] Praveen Kulkarni: Don't mind but I will talk with few people working in springboot.... I like such initiatives .... I will get back in 5-6 days ....
+[16:52, 08/07/2026] Praveen Kulkarni: Are there any other things like this .... Means opensource standards for digitalization
+[16:53, 08/07/2026] sikander peter friend forwarder: you need 5-6 days for networking ? 
+
+yes find some spring boot people. I also don’t mind to mentor them for the beginning, but they need intermediate programming skills, so they should know event driven designs
+[16:53, 08/07/2026] sikander peter friend forwarder: so a good typsescript developer is more valuable as a java beginner
+[16:54, 08/07/2026] sikander peter friend forwarder: especially if they developed in nest js, like I said nest js and spring boot have both the same mental model and concepts
+[16:54, 08/07/2026] sikander peter friend forwarder: yes just chck the unece.org website they are publishing the recommendations and frameworks
+[16:55, 08/07/2026] Praveen Kulkarni: Something similar is happening in india under ondc ... But it's still chaotic .... I hope the eu thing is more organized
+[16:55, 08/07/2026] sikander peter friend forwarder: no
+[16:56, 08/07/2026] sikander peter friend forwarder: same chaos but the laws are forcing logistics companies into the framework. It will still take time
+[16:56, 08/07/2026] sikander peter friend forwarder: maybe not that chaotic like in india, but it is a big mess
+[16:57, 08/07/2026] Praveen Kulkarni: I will need to read this
+[19:54, 11/07/2026] sikander peter friend forwarder: hola
+[19:56, 11/07/2026] sikander peter friend forwarder: hello
+[19:56, 11/07/2026] sikander peter friend forwarder: you have something for me already? we want to have a meeting tomorrow/
+[19:57, 11/07/2026] Praveen Kulkarni: tomorrow is sunday
+[19:57, 11/07/2026] Praveen Kulkarni: peter is meeting you ??
+[19:57, 11/07/2026] sikander peter friend forwarder: yes tomorrow is sunday
+[19:58, 11/07/2026] Praveen Kulkarni: u can demo the project as it is .... and see if u want changes ..... and decide nestjs vs springboot
+[19:58, 11/07/2026] sikander peter friend forwarder: yes we want to continue with the next phase
+[19:58, 11/07/2026] Praveen Kulkarni: i will get my resource onboard next month start again
+[19:58, 11/07/2026] sikander peter friend forwarder: spring boot?
+[19:59, 11/07/2026] Praveen Kulkarni: i am reading through the github repo u sent
+[20:00, 11/07/2026] Praveen Kulkarni: spring boot?
+u were saying right you want it to be in nestjs
+[20:00, 11/07/2026] sikander peter friend forwarder: yes would be god if you have read it and can join tomorrow as well online
+[20:00, 11/07/2026] sikander peter friend forwarder: u were saying right you want it to be in nestjs
+?
+[20:01, 11/07/2026] Praveen Kulkarni: tomorrow is sunday
+yes thats why i said its sunday ..... this week was hectic for me .... so i am out on sunday
+[20:02, 11/07/2026] Praveen Kulkarni: ?
+the current code is in sveltekit with postgres ..... do you think we need to migrate to nest js ??
+[20:02, 11/07/2026] Praveen Kulkarni: what if you both discuss tomorrow and come with major drawbacks with current design ..... or want any changes
+[20:03, 11/07/2026] Praveen Kulkarni: when are you people meeting ?? .... i will see if i can join
+[20:04, 11/07/2026] sikander peter friend forwarder: the current work is just a demo? nothing works anyways. there is no drawbacks, or did you invest in a ui system or any infrastructure ?
+[20:04, 11/07/2026] sikander peter friend forwarder: svelte is portable we can reuse, the postgres is just 3 tables
+[20:04, 11/07/2026] Praveen Kulkarni: the current work is just a demo? nothing works anyways. there is no drawbacks, or did you invest in a ui system or any infrastructure ?
+the database is functional right ?? means the tracking happens in db
+[20:05, 11/07/2026] Praveen Kulkarni: the bidding logic endpoints exist and you can add any buisness logic there
+[20:06, 11/07/2026] Praveen Kulkarni: the photo upload is fake  ..... but then can be implememented when you have clear requirements for AI
+[21:35, 12/07/2026] sikander peter friend forwarder: you have the all inkl domain account of peter right? Can you share the access ?
 [08:47, 13/07/2026] Praveen Kulkarni: Hi Good morning
 [08:48, 13/07/2026] Praveen Kulkarni: https://all-inkl.com/members/
 732701
@@ -77,7 +139,13 @@ Second, we need to decide the mode of operation:
 
 I just finished the meeting with Palash.
 
-He is an old friend of mine, and we have a long professional rel…
+He is an old friend of mine, and we have a long professional relationship, so he has agreed to help me manage the project. He is doing this as a favor to me until the project stabilizes.
+
+He is not available for hire, as he is already very well paid. I shared his profile because he will be managing my resources for the project and coordinating with you on the full-stack work once a week.
+
+My current resources have been selected through a lot of hiring effort, and they have an established professional relationship with me. I can make them available on a shared basis, as they are already involved in my other projects. Palash can manage them from here on a milestone-by-milestone basis, and he understands the work culture here.
+
+If you want dedicated developers, we'll need to post job advertisements and hire people exclusively for your project on fixed-term contracts, with options for extension. This is possible, but in that case you will need to take responsibility for quality checks and resource management, as both hiring and project management are full-time responsibilities. We can provide basic on-ground coordination.
 [23:41, 05/08/2026] sikander peter friend forwarder: Hi Praveen,
 
 Let's realign on the next steps so we can get this project moving.
@@ -85,7 +153,11 @@ First, regarding the engagement model: I am not looking to choose between a 'sha
 
 My priority is quality and capability over speed. However, I need to interview the actual developer who will be doing the coding asap. If Palash is only managing resources, I do not need to speak with him.
 
-Second, regarding the BRD: I agree that clear requirements are essential, and we will abso…
+Second, regarding the BRD: I agree that clear requirements are essential, and we will absolutely provide a detailed BRD. However, we are currently at Stage 0. The immediate focus for the replacement developer will be setting up the foundational infrastructure and building upon the direction of the existing demo.
+
+Once we have successfully vetted the developers, established the core infrastructure, and signed an NDA, we will provide the full BRD for the detailed features.
+
+Please let me know what time I can interview the developer. If you cannot provide competent developers for me to speak with until Friday, I will consider this contract breached and we will move immediately to the refund process for the 2000€.
 Hello Praveen,
 
 first of all, thank you for the cooperation. Unfortunately, we can't continue - as announced you missed presenting a competent developer. Therefore, in agreement and consultation with Peter, we decided to end the project with you and formally demand a full refund within 14 days of receipt of the attached letter.
