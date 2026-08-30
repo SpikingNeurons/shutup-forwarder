@@ -6,7 +6,7 @@
 	url = https://github.com/ForwarderDE/Fahad_Poc
 [submodule "src_code/NikhilForwarder"]
 	path = src_code/NikhilForwarder
-	url = https://github.com/Hanz0Hasashi/forwarder
+	url = https://github.com/ForwarderDE/forwarder
 [submodule "src_code/FahadForwader"]
 	path = src_code/FahadForwader
-	url = https://github.com/Fahadkhan0328/shutup-forwarder
+	url = https://github.com/ForwarderDE/shutup-forwarder
